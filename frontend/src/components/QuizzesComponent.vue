@@ -1,6 +1,11 @@
 <template>
     <div class="quiz-grid">
-        <Quiz v-for="quiz in quizzes" :key="quiz._id" :quiz="quiz" />
+        <template v-if="!isPopularQuizzes">
+            <Quiz v-for="quiz in quizzes" :key="quiz._id" :quiz="quiz" />
+        </template>
+        <template v-if="isPopularQuizzes">
+            <Quiz v-for="quiz in quizzes" :key="quiz._id" :quiz="quiz.quiz_details" />
+        </template>
     </div>
 </template>
 
@@ -8,7 +13,7 @@
 import Quiz from './Quiz.vue';
 
     export default {
-        props: ['quizzes'],
+        props: ['quizzes', 'isPopularQuizzes'],
         components: { Quiz }
     }
 </script>

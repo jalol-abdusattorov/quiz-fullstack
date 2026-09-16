@@ -14,6 +14,7 @@
 import { useAuthStore } from '@/stores/auth';
 
     export default {
+        name: "NotFound",
         setup() {
             const authStore = useAuthStore()
 

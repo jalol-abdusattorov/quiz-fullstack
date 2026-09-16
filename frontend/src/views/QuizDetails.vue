@@ -10,6 +10,7 @@ import { useQuizzesStore } from '@/stores/QuizzesStore';
 import { onMounted, ref } from 'vue';
 
     export default {
+        name: "QuizDetails",
         props: ['id'],
         components: { ViewQuiz },
         setup(props) {
@@ -24,7 +25,3 @@ import { onMounted, ref } from 'vue';
         }
     }
 </script>
-
-<style scoped>
-
-</style>

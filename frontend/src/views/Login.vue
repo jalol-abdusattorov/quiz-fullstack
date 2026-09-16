@@ -21,6 +21,7 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router'
 
     export default {
+        name: "Login",
         setup() {
             const authStore = useAuthStore()
             const router = useRouter()
@@ -32,6 +33,7 @@ import { useRouter } from 'vue-router'
                 try {
                     await authStore.login({ email: email.value, password: password.value })
                     router.push({ name: "Home" })
+                    error.value = null
                 } catch (exc) {
                     
                 }

@@ -2,7 +2,7 @@ import bson
 from bson import ObjectId
 from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Request, status
-from datetime import datetime as dt
+from datetime import datetime as dt, timedelta, timezone
 
 from mongodb import *
 from models import *
@@ -778,3 +778,66 @@ def get_quiz_hardest_questions(
 
     except bson.errors.InvalidId:
         raise invalid_id_exception
+
+# AUTHORIZED
+@router.get("/quizzes/popular/{page}")
+def get_popular_quizzes(
+    page: int,
+    request: Request,
+    _: Annotated[str, Depends(swagger_bearer_scheme)]
+):
+    if page <= 0:
+        raise page_exception
+
+    skipping_value = (page - 1) * 10
+    limit = 10
+
+    time_threshold = dt.now(timezone.utc) - timedelta(days=7)
+    result = results_collection.aggregate([
+        {
+            "$match": {
+                "completed_at": {
+                    "$gte": time_threshold
+                }
+            }
+        },
+        {
+            '$group': {
+                '_id': '$quiz_id', 
+                'play_count': {
+                    '$sum': 1
+                }
+            }
+        },
+        {
+            '$sort': { 'play_count': -1 }
+        },
+        {
+            "$skip": skipping_value
+        },
+        {
+            "$limit": limit
+        },
+        {
+            '$lookup': {
+                'from':         'quizzes', 
+                'localField':   '_id', 
+                'foreignField': '_id', 
+                'as':           'quiz_details'
+            }
+        },
+        {
+            '$unwind': { 'path': '$quiz_details' }
+        }
+    ])
+
+    final_result = list(result)
+
+    for doc in final_result:
+        doc['_id'] = str(doc['_id'])
+        doc['quiz_details']['_id'] = str(doc['quiz_details']['_id'])
+
+        for i in range(len(doc['quiz_details']['question_ids'])):
+            doc['quiz_details']['question_ids'][i] = str(doc['quiz_details']['question_ids'][i])
+
+    return {"result": final_result}

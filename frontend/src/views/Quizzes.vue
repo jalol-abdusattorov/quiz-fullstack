@@ -7,16 +7,35 @@
                 </div>
 
                 <div class="pagination-controls">
+                    <span class="page-indicatior" v-if="isPopularQuizzes">Popular Quizzes</span>
+                    <span class="page-indicatior" v-if="!isPopularQuizzes">All Quizzes</span>
+                    <button class="page-btn all-quizzes" @click="allQuizzes">All Quizzes</button>
+                    <button class="page-btn popular-quizzes" @click="popularQuizzes">Popular Quizzes</button>
                     <span class="page-indicator">Page {{ currentPage }}</span>
                     <button class="page-btn" :disabled="currentPage <= 1" @click="prevPage">Previous</button>
                     <button class="page-btn" @click="nextPage">Next</button>
                 </div>
             </div>
 
-            <QuizzesComponent :quizzes="quizzesStore.quizzes"/>
+            <template v-if="!isPopularQuizzes">
+              <QuizzesComponent :quizzes="quizzesStore.quizzes" :is-popular-quizzes="false" />
+              
+              <div v-if="quizzesStore.quizzes?.length === undefined">This page is empty</div>
+            </template>
+            <template v-if="isPopularQuizzes">
+              <QuizzesComponent :quizzes="quizzesStore.quizzes.result" :is-popular-quizzes="true" v-if="quizzesStore.quizzes?.result"/>
+
+              <div v-if="quizzesStore.quizzes?.result">
+                <div v-if="Object.keys(quizzesStore.quizzes?.result).length === 0">This page is empty</div>
+              </div>
+            </template>
             <div v-if="quizzesStore.error">An error has occured</div>
             <div v-if="quizzesStore.loading">loading data...</div>
-            <div v-if="!quizzesStore.quizzes">Page is empty</div>
+
+            <!-- <template v-if="!isPopularQuizzes">
+            </template>
+            <template v-if="isPopularQuizzes">
+            </template> -->
         </main>
     </div>
 </template>
@@ -28,8 +47,10 @@ import { onMounted, ref } from 'vue';
 import QuizDetails from './QuizDetails.vue';
 
     export default {
+        name: "Quizzes",
         components: { QuizzesComponent, QuizDetails },
         setup() {
+            const isPopularQuizzes = ref(false)
             const quizzesStore = useQuizzesStore()
             const currentPage = ref(1)
             const response = ref('')
@@ -40,19 +61,38 @@ import QuizDetails from './QuizDetails.vue';
 
             async function nextPage() {
                 currentPage.value++;
-                response.value = await quizzesStore.getQuizzes(currentPage.value)
-            }
-            async function prevPage() {
-                if (currentPage.value !== 1)  {
-                    currentPage.value--;
-                    response.value = await quizzesStore.getQuizzes(currentPage.value)
+                if (!isPopularQuizzes.value) {
+                  response.value = await quizzesStore.getQuizzes(currentPage.value)
+                } else {
+                  response.value = await quizzesStore.getPopularQuizzes(currentPage.value)
                 }
             }
-            const selectedQuiz = (quizId) => {
-                
+            async function prevPage() {
+                if (currentPage.value > 1)  {
+                    currentPage.value--;
+                    if (!isPopularQuizzes.value) {
+                      response.value = await quizzesStore.getQuizzes(currentPage.value)
+                    } else {
+                      response.value = await quizzesStore.getPopularQuizzes(currentPage.value)
+                    }
+                }
             }
 
-            return { currentPage, nextPage, prevPage, quizzesStore, response, selectedQuiz }
+            async function allQuizzes() {
+              if (isPopularQuizzes.value) {
+                isPopularQuizzes.value = false
+                response.value = await quizzesStore.getQuizzes(currentPage.value)
+              }
+            }
+
+            async function popularQuizzes() {
+              if (!isPopularQuizzes.value) {
+                isPopularQuizzes.value = true
+                response.value = await quizzesStore.getPopularQuizzes(currentPage.value)
+              }
+            }
+
+            return { currentPage, nextPage, prevPage, quizzesStore, response, isPopularQuizzes, popularQuizzes, allQuizzes }
         }
     }
 </script>

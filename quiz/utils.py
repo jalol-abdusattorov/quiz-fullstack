@@ -1,7 +1,7 @@
 import json
 from random import randint
 
-from fastapi.security import HTTPBearer
+# from fastapi.security import HTTPBearer
 
 def random_id() -> int:
     with open("quiz.json", 'r') as f:

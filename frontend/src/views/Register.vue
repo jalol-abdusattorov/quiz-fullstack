@@ -28,6 +28,7 @@
     import { ref } from 'vue';
 
     export default {
+        name: "Register",
         setup() {
             const authStore = useAuthStore()
 
