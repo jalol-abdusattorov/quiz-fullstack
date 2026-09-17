@@ -7,8 +7,8 @@
                 </div>
 
                 <div class="pagination-controls">
-                    <span class="page-indicatior" v-if="isPopularQuizzes">Popular Quizzes</span>
-                    <span class="page-indicatior" v-if="!isPopularQuizzes">All Quizzes</span>
+                    <p class="page-indicatior" v-if="isPopularQuizzes">Popular Quizzes</p>
+                    <p class="page-indicatior" v-if="!isPopularQuizzes">All Quizzes</p>
                     <button class="page-btn all-quizzes" @click="allQuizzes">All Quizzes</button>
                     <button class="page-btn popular-quizzes" @click="popularQuizzes">Popular Quizzes</button>
                     <span class="page-indicator">Page {{ currentPage }}</span>
@@ -17,11 +17,20 @@
                 </div>
             </div>
 
-            <template v-if="!isPopularQuizzes">
-              <QuizzesComponent :quizzes="quizzesStore.quizzes" :is-popular-quizzes="false" />
-              
-              <div v-if="quizzesStore.quizzes?.length === undefined">This page is empty</div>
-            </template>
+            <div class="filters">
+              <label for="category-choice">Category: </label>
+              <select class="select-box" v-model="category" @change="handleSelect">
+                <option value="" disabled selected>Select an option...</option>
+                <option value="Programming">Programming</option>
+                <option value="Mathematics">Mathematics</option>
+                <option value="Science">Science</option>
+                <option value="History">History</option>
+                <option value="Geography">Geography</option>
+                <option value="Animals">Animals/Nature</option>
+              </select>
+            </div>
+
+            
             <template v-if="isPopularQuizzes">
               <QuizzesComponent :quizzes="quizzesStore.quizzes.result" :is-popular-quizzes="true" v-if="quizzesStore.quizzes?.result"/>
 
@@ -29,13 +38,17 @@
                 <div v-if="Object.keys(quizzesStore.quizzes?.result).length === 0">This page is empty</div>
               </div>
             </template>
+
+            <template v-else>
+              <QuizzesComponent :quizzes="quizzesStore.quizzes" :is-popular-quizzes="false" />
+              <div v-if="quizzesStore.quizzes">
+                <p v-if="quizzesStore.quizzes.length === 0">This page is empty</p>
+              </div>
+              <p v-else>This page is empty</p>
+            </template>
+
             <div v-if="quizzesStore.error">An error has occured</div>
             <div v-if="quizzesStore.loading">loading data...</div>
-
-            <!-- <template v-if="!isPopularQuizzes">
-            </template>
-            <template v-if="isPopularQuizzes">
-            </template> -->
         </main>
     </div>
 </template>
@@ -50,10 +63,10 @@ import QuizDetails from './QuizDetails.vue';
         name: "Quizzes",
         components: { QuizzesComponent, QuizDetails },
         setup() {
+            const category = ref()
             const isPopularQuizzes = ref(false)
             const quizzesStore = useQuizzesStore()
             const currentPage = ref(1)
-            const response = ref('')
             
             onMounted(() => {
                 quizzesStore.getQuizzes(currentPage.value)
@@ -62,18 +75,18 @@ import QuizDetails from './QuizDetails.vue';
             async function nextPage() {
                 currentPage.value++;
                 if (!isPopularQuizzes.value) {
-                  response.value = await quizzesStore.getQuizzes(currentPage.value)
+                  await quizzesStore.getQuizzes(currentPage.value)
                 } else {
-                  response.value = await quizzesStore.getPopularQuizzes(currentPage.value)
+                  await quizzesStore.getPopularQuizzes(currentPage.value)
                 }
             }
             async function prevPage() {
                 if (currentPage.value > 1)  {
                     currentPage.value--;
                     if (!isPopularQuizzes.value) {
-                      response.value = await quizzesStore.getQuizzes(currentPage.value)
+                      await quizzesStore.getQuizzes(currentPage.value)
                     } else {
-                      response.value = await quizzesStore.getPopularQuizzes(currentPage.value)
+                      await quizzesStore.getPopularQuizzes(currentPage.value)
                     }
                 }
             }
@@ -81,18 +94,24 @@ import QuizDetails from './QuizDetails.vue';
             async function allQuizzes() {
               if (isPopularQuizzes.value) {
                 isPopularQuizzes.value = false
-                response.value = await quizzesStore.getQuizzes(currentPage.value)
+                await quizzesStore.getQuizzes(currentPage.value)
               }
             }
 
             async function popularQuizzes() {
               if (!isPopularQuizzes.value) {
                 isPopularQuizzes.value = true
-                response.value = await quizzesStore.getPopularQuizzes(currentPage.value)
+                await quizzesStore.getPopularQuizzes(currentPage.value)
               }
             }
 
-            return { currentPage, nextPage, prevPage, quizzesStore, response, isPopularQuizzes, popularQuizzes, allQuizzes }
+            async function handleSelect() {
+              currentPage.value = 1
+              if (isPopularQuizzes.value) isPopularQuizzes.value = false
+              await quizzesStore.getQuizzesByCategory(category.value, currentPage.value)
+            }
+
+            return { currentPage, nextPage, prevPage, quizzesStore, isPopularQuizzes, category, popularQuizzes, allQuizzes, handleSelect }
         }
     }
 </script>
@@ -160,4 +179,19 @@ import QuizDetails from './QuizDetails.vue';
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+.filters {
+  background-color:#ddd;
+  padding: 15px;
+  margin-bottom: 20px;
+  border-radius: 7px;
+}
+
+.select-box {
+  background: #ddd;
+  padding: 10px;
+  border-radius: 5px;
+  border: 0.8px solid #1e293b;
+}
+
 </style>

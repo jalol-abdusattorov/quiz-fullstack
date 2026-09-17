@@ -841,3 +841,40 @@ def get_popular_quizzes(
             doc['quiz_details']['question_ids'][i] = str(doc['quiz_details']['question_ids'][i])
 
     return {"result": final_result}
+
+# AUTHORIZED
+@router.get("/quizzes/category/{category}/{page}")
+def get_quizzes_by_category(
+    category: str,
+    page: int,
+    request: Request,
+    _: Annotated[str, Depends(swagger_bearer_scheme)]
+):
+    if page < 1:
+        return page_exception
+
+    skipping_value = (page - 1) * 10
+    limit = 10
+
+    cursor = quizzes_collection.aggregate([
+        {
+            '$match': {
+                'category': category
+            }
+        },
+        {
+            '$skip': skipping_value
+        },
+        {
+            '$limit': limit
+        }
+    ])
+
+    result = list(cursor)
+
+    for doc in result:
+        doc['_id'] = str(doc['_id'])
+        for i in range(len(doc['question_ids'])):
+            doc['question_ids'][i] = str(doc['question_ids'][i])
+
+    return {"result": result}

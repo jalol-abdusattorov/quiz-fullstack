@@ -50,12 +50,30 @@ export const useQuizzesStore = defineStore('quizzesStore', () => {
             quizzes.value = data
 
             return data
-        } catch (exc) {
-            error.value = exc.message || exc``
+        } catch (exception) {
+            error.value = exception.message || exception``
         } finally {
             loading.value = false
         }
     }
 
-    return { quizzes, loading, error, getQuizzes, getQuiz, getPopularQuizzes }
+    async function getQuizzesByCategory(category, page) {
+        loading.value = true
+        error.value = null
+
+        try {
+            const response = await this.$api.get(`/quizzes/category/${category}/${page}`)
+            const data = response.data
+            // console.log(data.result);
+            quizzes.value = data.result
+
+            return data
+        } catch (exception) {
+            error.value = exception.message || exc
+        } finally {
+            loading.value = false
+        }
+    }
+
+    return { quizzes, loading, error, getQuizzes, getQuiz, getPopularQuizzes, getQuizzesByCategory }
 })
