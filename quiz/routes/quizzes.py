@@ -1,7 +1,9 @@
+import re
+
 import bson
 from bson import ObjectId
-from typing import Annotated
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from typing import Annotated, Optional
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from datetime import datetime as dt, timedelta, timezone
 
 from mongodb import *
@@ -779,6 +781,7 @@ def get_quiz_hardest_questions(
     except bson.errors.InvalidId:
         raise invalid_id_exception
 
+
 # AUTHORIZED
 @router.get("/quizzes/popular/{page}")
 def get_popular_quizzes(
@@ -842,6 +845,7 @@ def get_popular_quizzes(
 
     return {"result": final_result}
 
+
 # AUTHORIZED
 @router.get("/quizzes/category/{category}/{page}")
 def get_quizzes_by_category(
@@ -878,3 +882,124 @@ def get_quizzes_by_category(
             doc['question_ids'][i] = str(doc['question_ids'][i])
 
     return {"result": result}
+
+
+# AUTHORIZED
+@router.get("/quizzes")
+def get_quizzes(
+    req: Request,
+    _: Annotated[str, Depends(swagger_bearer_scheme)],
+    category: str,
+    difficulty: str,
+    sorting_by: str,
+    sorting_order: str,
+    page: int,
+):
+    if page < 1:
+        raise page_exception
+
+    if difficulty not in ['all', 'easy', 'medium', 'hard']:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="difficulty should be all, easy, medium or hard")
+
+    sorting_order = 1 if sorting_order == "ascending" else -1
+
+    categoryFilter = {} if category == "all" else { "category": category }
+    difficultyFilter = {} if difficulty == "all" else { "difficulty": difficulty }
+    sort = { sorting_by: sorting_order }
+
+    skipping_val = (page - 1) * 10
+    limit = 10
+
+    cursor = quizzes_collection.aggregate([
+        {
+            "$match": categoryFilter
+        },
+        {
+            "$match": difficultyFilter
+        },
+        {
+            "$sort": sort
+        },
+        {
+            "$skip": skipping_val
+        },
+        {
+            "$limit": limit
+        }
+    ])
+
+    final_result = list(cursor)
+    
+    for i in range(len(final_result)):
+        final_result[i]['_id'] = str(final_result[i]['_id'])
+
+        for j in range(len(final_result[i]['question_ids'])):
+            final_result[i]['question_ids'][j] = str(final_result[i]['question_ids'][j])
+
+    return {"result": final_result}
+
+
+# AUTHORIZED
+@router.get("/quizzes/{search_by}/{search}/{page}")
+def search_quizzes_by(
+    search_by: str,
+    search: str,
+    page: int,
+    request: Request,
+    _: Annotated[str, Depends(swagger_bearer_scheme)]
+):
+    if search_by not in ['title', 'description', 'category', 'difficulty']:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="invalid search")
+
+    safe_target = re.escape(search)
+
+    skipping_val = (page - 1) * 10
+    limit = 10
+
+    cursor = quizzes_collection.aggregate([
+        {
+            "$match": {
+                "title": {
+                    "$regex": safe_target,
+                    "$options": "i"
+                }
+            }
+        },
+        {
+            "$project": {
+                "title": 1,
+                "category": 1,
+                "description": 1,
+                "difficulty": 1,
+                "question_ids": 1,
+                "time_limit": 1,
+                "created_at": 1,
+                "includesTarget": {
+                    "$regexMatch": {
+                        "input": { "$ifNull": [f"${search_by}", ""] },
+                        "regex": safe_target,
+                        "options": "i"
+                    }
+                }
+            }
+        },
+        {
+            "$skip": skipping_val
+        },
+        {
+            "$limit": limit
+        }
+    ])
+    
+    final_result = list(cursor)
+
+    if not final_result:
+        return {'message': f'doesnt match any {search_by}'}
+
+    for i in range(len(final_result)):
+        final_result[i]['_id'] = str(final_result[i]['_id'])
+
+        for j in range(len(final_result[i]["question_ids"])):
+            final_result[i]['question_ids'][j] = str(final_result[i]['question_ids'][j])
+
+    return final_result

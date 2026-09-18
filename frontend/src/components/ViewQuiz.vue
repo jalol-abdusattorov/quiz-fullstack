@@ -44,23 +44,15 @@ import { useRouter } from 'vue-router';
 </script>
 
 <style scoped>
-    /* main {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        min-height: 100vh;
-    } */
     .container {
         display: flex;
         flex-direction: column;
         align-items: center;
-        /* justify-content: center; */
         min-height: 100vh;
     }
 
     .quiz-card {
         width: 600px;
-        /* height: 400px; */
         background-color: #fff;
         border: 1px solid #e2e8f0;
         border-radius: 12px;

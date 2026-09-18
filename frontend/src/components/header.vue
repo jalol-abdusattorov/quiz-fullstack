@@ -1,13 +1,13 @@
 <template>
     <div>
         <header class="navbar">
+            <router-link :to="{ name: 'Home' }" class="brand">Quiz</router-link>
             <nav class="router-links">
-                <router-link :to="{ name: 'Home' }" class="brand">Quiz</router-link>
-
                 <!-- ADMIN -->
                 <template v-if="isAdmin">
                     <router-link class="nav-btn" :to="{ name: 'Home' }">Home</router-link>
                     <router-link class="nav-btn" :to="{ name: 'Quizzes' }">Quizzes</router-link>
+                    <router-link class="nav-btn" :to="{ name: 'QuizBrowser' }">Browse Quizzes</router-link>
                     <router-link class="nav-btn" :to="{ name: 'Logout' }">Logout</router-link>
                 </template>
 
@@ -15,6 +15,7 @@
                 <template v-else-if="isAuthenticated">
                     <router-link class="nav-btn" :to="{ name: 'Home' }">Home</router-link>
                     <router-link class="nav-btn" :to="{ name: 'Quizzes' }">Quizzes</router-link>
+                    <router-link class="nav-btn" :to="{ name: 'QuizBrowser' }">Browse Quizzes</router-link>
                     <router-link class="nav-btn" :to="{ name: 'Logout' }">Logout</router-link>
                 </template>
 
@@ -33,6 +34,7 @@ import { useAuthStore } from '@/stores/auth';
 import { storeToRefs } from 'pinia';
 
     export default {
+        name: "AppHeader",
         setup() {
             const authStore = useAuthStore()
             const { isAuthenticated, isAdmin } = storeToRefs(authStore)
@@ -48,9 +50,8 @@ import { storeToRefs } from 'pinia';
   border-bottom: 1px solid #e2e8f0;
   padding: 1rem 2rem;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.137);
 }
 
 .brand {
@@ -58,7 +59,7 @@ import { storeToRefs } from 'pinia';
   font-weight: 700;
   color: #4f46e5;
   text-decoration: none;
-  margin-right: 30px;
+  margin-right: auto;
 }
 
 .nav-links {

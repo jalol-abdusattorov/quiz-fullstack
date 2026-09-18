@@ -36,6 +36,7 @@ export const useQuizzesStore = defineStore('quizzesStore', () => {
             return data
         } catch (exception) {
             error.value = exception.message || exception
+            console.error(exception);
         } finally {
             loading.value = false
         }
@@ -51,7 +52,8 @@ export const useQuizzesStore = defineStore('quizzesStore', () => {
 
             return data
         } catch (exception) {
-            error.value = exception.message || exception``
+            error.value = exception.message || exception
+            console.error(exception);
         } finally {
             loading.value = false
         }
@@ -69,11 +71,94 @@ export const useQuizzesStore = defineStore('quizzesStore', () => {
 
             return data
         } catch (exception) {
+            error.value = exception.message || exception
+            console.error(exception);
+        } finally {
+            loading.value = false
+        }
+    }
+
+    async function getUserStatistics(userId) {
+        loading.value = true
+        error.value = null
+
+        try {
+            const response = await this.$api.get(`/users/${userId}/statistics`)
+            const data = response.data
+            // console.log(data.result);
+
+            return data
+        } catch (exception) {
             error.value = exception.message || exc
         } finally {
             loading.value = false
         }
     }
 
-    return { quizzes, loading, error, getQuizzes, getQuiz, getPopularQuizzes, getQuizzesByCategory }
+    async function getUserRecentAttepmts(userId) {
+        loading.value = true
+        error.value = null
+
+        try {
+            const response = await this.$api.get(`/users/${userId}/recent-attempts`)
+            const data = response.data
+            // console.log(data.result);
+
+            return data
+        } catch (exception) {
+            error.value = exception.message || exception
+            console.error(exception);
+        } finally {
+            loading.value = false
+        }
+    }
+    
+    async function filterQuizzes(category, difficulty, sortingBy, sortingOrder, page) {
+        loading.value = true
+        error.value = null
+
+        try {
+            const params = {
+                params: {
+                    category: category,
+                    difficulty: difficulty,
+                    sorting_by: sortingBy,
+                    sorting_order: sortingOrder,
+                    page: page
+                }
+            }
+
+            const response = await this.$api.get(`/quizzes`, params)
+            const data = response.data
+            // console.log(data);
+            quizzes.value = data.result
+
+            return data
+        } catch (exception) {
+            error.value = exception.message || exception
+            console.error(exception);
+        } finally {
+            loading.value = false
+        }
+    }
+
+    async function searchQuiz(searchBy, search, page) {
+        loading.value = true
+        error.value = null
+
+        try {
+            const response = await this.$api.get(`/quizzes/${searchBy}/${search}/${page}`)
+            const data = response.data
+            quizzes.value = data
+            
+            return data
+        } catch (exception) {
+            error.value = exception.message || exception
+            console.error(exception);
+        } finally {
+            loading.value = false
+        }
+    }
+
+    return { quizzes, loading, error, getQuizzes, getQuiz, getPopularQuizzes, getQuizzesByCategory, getUserStatistics, getUserRecentAttepmts, filterQuizzes, searchQuiz }
 })

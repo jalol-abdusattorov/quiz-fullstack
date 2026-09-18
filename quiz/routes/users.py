@@ -2,7 +2,7 @@ import bson
 from bson import ObjectId
 from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Request, status
-from datetime import datetime as dt
+from datetime import datetime as dt, timezone
 from datetime import timedelta
 
 from models import UserRequest
@@ -229,6 +229,71 @@ def get_user_history(
             return {"message": "this user has no statistics on this page"}
 
         return {"result": final_result}
+
+    except bson.errors.InvalidId:
+        raise invalid_id_exception
+
+
+# AUTHORIZED
+@router.get("/users/{user_id}/recent-attempts")
+def get_user_recent_attempts(
+    user_id: str,
+    request: Request,
+    _: Annotated[str, Depends(swagger_bearer_scheme)]
+):
+    try:
+        user_id = ObjectId(user_id)
+
+        user_exists = users_collection.find_one({ "_id": user_id })
+        if not user_exists:
+            raise user_doesnt_exist_exception
+
+        time_threshold = dt.now(timezone.utc) - timedelta(days=4)
+        result = results_collection.aggregate([
+            {
+                '$match': {
+                    'user_id': user_id
+                }
+            },
+            {
+                '$match': {
+                    'completed_at': {
+                        '$gte': time_threshold
+                    }
+                }
+            },
+            {
+                '$lookup': {
+                    'from':         'quizzes', 
+                    'localField':   'quiz_id', 
+                    'foreignField': '_id', 
+                    'as':           'quiz_details'
+                }
+            },
+            {
+                '$unwind': {
+                    'path': '$quiz_details'
+                }
+            }
+        ])
+
+        final_result = list(result)
+
+        if not final_result:
+            return {"message": "this user has no recent attemtps"}
+
+        quizzes = []
+        for doc in final_result:
+            doc['quiz_details']['_id'] = str(doc['quiz_details']['_id'])
+            for i in range(len(doc['quiz_details']['question_ids'])):
+                doc['quiz_details']['question_ids'][i] = str(doc['quiz_details']['question_ids'][i])
+
+            doc['quiz_details']['taken_at'] = doc['started_at']
+            doc['quiz_details']['completed_at'] = doc['completed_at']
+
+            quizzes.append(doc['quiz_details'])
+
+        return {"result": quizzes}
 
     except bson.errors.InvalidId:
         raise invalid_id_exception

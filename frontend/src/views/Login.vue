@@ -8,7 +8,7 @@
 
             <div class="form-actions">
                 <button type="submit" class="login-btn">Login</button>
-                <router-link class="register-link" :to="{ name: 'Register' }">Register</router-link>
+                <router-link class="register-link" :to="{ name: 'Register' }">Don't have an account?</router-link>
             </div>
             <p class="error">{{ authStore.error }}</p>
         </form>

@@ -7,6 +7,7 @@ import Quizzes from '@/views/Quizzes.vue'
 import { useAuthStore } from '@/stores/auth'
 import NotFound from '@/views/NotFound.vue'
 import QuizDetails from '@/views/QuizDetails.vue'
+import QuizBrowser from '@/views/QuizBrowser.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -47,6 +48,12 @@ const router = createRouter({
       component: QuizDetails,
       meta: { requiresAuth: true },
       props: true
+    },
+    {
+      path: "/quizzes/browse",
+      name: "QuizBrowser",
+      component: QuizBrowser,
+      meta: { requiresAuth: true }
     },
     {
       path: '/:pathMatch(.*)*',

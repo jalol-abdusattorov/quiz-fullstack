@@ -15,8 +15,10 @@
                 <label class="terms-conditions">Accept terms and conditions</label>
             </div>
 
-            <button type="submit"
-             :disabled="!termsAccepted">register</button>
+            <div class="form-actions">
+                <button type="submit" :disabled="!termsAccepted">register</button>
+                <router-link :to="{ name: 'Login' }" class="login-link">Already have an account?</router-link>
+            </div>
             <p class="error">{{ authStore.error }}</p>
         </form>
     </main>
@@ -55,6 +57,22 @@
 </script>
 
 <style scoped>
+    .form-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .form-actions a {
+        text-decoration: none;
+        color: rgb(77, 86, 165);
+        transition: 0.2s ease;
+    }
+
+    .form-actions a:hover {
+        text-decoration: underline;
+    }
+
     form {
         max-width: 420px;
         margin: 30px auto;

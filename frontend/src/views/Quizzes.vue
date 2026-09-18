@@ -192,6 +192,7 @@ import QuizDetails from './QuizDetails.vue';
   padding: 10px;
   border-radius: 5px;
   border: 0.8px solid #1e293b;
+  margin-left: 15px;
 }
 
 </style>

@@ -3,10 +3,8 @@
       <div class="card-content">
           <h3 class="quiz-title">{{ quiz.title }}</h3>
           <p class="quiz-description">{{ quiz.description || 'No description provided' }}</p>
-          <p class="quiz-category">Category: {{ quiz.category }}</p>
-          <p class="quiz-difficulty">{{ quiz.difficulty }} difficulty</p>
-          <p class="quiz-questions">{{ quiz.question_ids?.length || 0 }} Questions</p>
-          <p class="quiz-timelimit">{{ formatTime(quiz.time_limit) }}</p>
+          <p class="quiz-category-difficulty">{{ quiz.category }} · {{ quiz.difficulty }}</p>
+          <p class="quiz-questions">{{ quiz.question_ids?.length || 0 }} Questions · {{ formatTime(quiz.time_limit) }}</p>
       </div>
       <router-link v-if="quiz?._id"  :to="{ name: 'QuizDetails', params: { id: quiz._id } }" class="view-btn">View quiz</router-link>
     </div>
