@@ -2,14 +2,13 @@
     <div class="dashboard-layout">
         <main class="container">
             <div class="search-quiz">
+                <input class="search-bar" type="text" @input="onTyping" v-model="searching" placeholder="Search quizzes...">
                 <select class="select-box search-filter-box" v-model="searchingBy">
                     <option value="title" selected>By Title</option>
                     <option value="description">By Description</option>
                     <option value="category">By Category</option>
                     <option value="difficulty">By Difficulty</option>
                 </select>
-                <input class="search-bar" type="text" v-model="searching" placeholder="Search quizzes...">
-                <button class="search-btn" @click="searchQuizzesWithFilter">Search</button>
             </div>
             <div class="filters">
                 <div>
@@ -51,13 +50,11 @@
                 <button class="page-btn" :disabled="currentPage <= 1" @click="prevPage">Previous</button>
                 <button class="page-btn" @click="nextPage">Next</button>
             </div>
-            <div v-if="quizzesStore.quizzes">
+            <div v-if="quizzesStore.quizzes.length">
                 <QuizzesComponent :quizzes="quizzesStore.quizzes" />
             </div>
+
             <p v-if="!quizzesStore.quizzes?.length">This page is empty</p>
-            <p>{{ isSearchingQuizzes }}</p>
-            <p>{{ searching }}</p>
-            <p>{{ searchingBy }}</p>
         </main>
     </div>
 </template>
@@ -81,6 +78,19 @@ import { onMounted, ref } from 'vue';
             const searching = ref('')
             const isSearchingQuizzes = ref(false)
 
+            const performSearch = () => {
+                searchQuizzesWithFilter()
+            }
+
+            let debounceTimer = null
+            const onTyping = () => {
+                clearTimeout(debounceTimer);
+
+                debounceTimer = setTimeout(() => {
+                    performSearch()
+                }, 200)
+            }
+
             async function prevPage() {
                 if (currentPage.value <= 1) return
                 currentPage.value--
@@ -98,7 +108,6 @@ import { onMounted, ref } from 'vue';
                     searchQuizzesWithFilter()
                 }
             }
-
             async function getFilteredQuizzes() {
                 await quizzesStore.filterQuizzes(
                     category.value,
@@ -109,7 +118,6 @@ import { onMounted, ref } from 'vue';
                 )
                 isSearchingQuizzes.value = false
             }
-
             async function searchQuizzesWithFilter() {
                 await quizzesStore.searchQuiz(
                     searchingBy.value,
@@ -123,7 +131,7 @@ import { onMounted, ref } from 'vue';
                 getFilteredQuizzes()
             })
 
-            return { category, difficulty, sortingBy, sortOrder, searchingBy, searching, isSearchingQuizzes, currentPage, prevPage, nextPage, quizzesStore, getFilteredQuizzes, searchQuizzesWithFilter }
+            return { onTyping, category, difficulty, sortingBy, sortOrder, searchingBy, searching, isSearchingQuizzes, currentPage, prevPage, nextPage, quizzesStore, getFilteredQuizzes }
         }
     }
 </script>

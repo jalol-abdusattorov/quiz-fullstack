@@ -1,8 +1,8 @@
-<template>
-    <div class="quiz-card">
+<template>  
+    <div class="quiz-card" v-if="quiz">
       <div class="card-content">
           <h3 class="quiz-title">{{ quiz.title }}</h3>
-          <p class="quiz-description">{{ quiz.description || 'No description provided' }}</p>
+          <p class="quiz-description">{{ substring(quiz.description) || 'No description provided' }}</p>
           <p class="quiz-category-difficulty">{{ quiz.category }} · {{ quiz.difficulty }}</p>
           <p class="quiz-questions">{{ quiz.question_ids?.length || 0 }} Questions · {{ formatTime(quiz.time_limit) }}</p>
       </div>
@@ -11,9 +11,11 @@
 </template>
 
 <script>
+import { onMounted } from 'vue';
+
     export default {
         props: ['quiz'],
-        setup() {
+        setup(props) {
             const formatTime = (seconds) => {
                 if (!seconds) return
                 const mins = Math.floor(seconds / 60)
@@ -21,7 +23,14 @@
                 return `${mins}m ${secs}s`
             }
 
-            return { formatTime }
+            const substring = (sentence) => {
+              if (sentence.length > 50) {
+                sentence = sentence.substring(0, 50) + "..."
+              }
+              return sentence
+            }
+
+            return { formatTime, substring }
         }
     }
 </script>

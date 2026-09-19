@@ -67,7 +67,7 @@ import QuizDetails from './QuizDetails.vue';
             const isPopularQuizzes = ref(false)
             const quizzesStore = useQuizzesStore()
             const currentPage = ref(1)
-            
+
             onMounted(() => {
                 quizzesStore.getQuizzes(currentPage.value)
             })
@@ -92,10 +92,10 @@ import QuizDetails from './QuizDetails.vue';
             }
 
             async function allQuizzes() {
-              if (isPopularQuizzes.value) {
-                isPopularQuizzes.value = false
-                await quizzesStore.getQuizzes(currentPage.value)
-              }
+              // if (isPopularQuizzes.value) {
+              isPopularQuizzes.value = false
+              await quizzesStore.getQuizzes(currentPage.value)
+              // }
             }
 
             async function popularQuizzes() {
@@ -170,6 +170,12 @@ import QuizDetails from './QuizDetails.vue';
   cursor: pointer;
   transition: background-color 0.15s ease;
 }
+/* .page-btn */
+.all-quizzes:active {
+  background-color: red;
+  border: 1px solid black;
+}
+
 
 .page-btn:hover:not(:disabled) {
   background-color: #f8fafc;

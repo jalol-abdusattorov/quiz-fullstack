@@ -940,7 +940,7 @@ def get_quizzes(
 
 
 # AUTHORIZED
-@router.get("/quizzes/{search_by}/{search}/{page}")
+@router.get("/quizzes/search/{page}")
 def search_quizzes_by(
     search_by: str,
     search: str,
@@ -956,43 +956,28 @@ def search_quizzes_by(
     skipping_val = (page - 1) * 10
     limit = 10
 
-    cursor = quizzes_collection.aggregate([
-        {
-            "$match": {
-                "title": {
-                    "$regex": safe_target,
-                    "$options": "i"
-                }
-            }
-        },
-        {
-            "$project": {
-                "title": 1,
-                "category": 1,
-                "description": 1,
-                "difficulty": 1,
-                "question_ids": 1,
-                "time_limit": 1,
-                "created_at": 1,
-                "includesTarget": {
-                    "$regexMatch": {
-                        "input": { "$ifNull": [f"${search_by}", ""] },
-                        "regex": safe_target,
-                        "options": "i"
+    search = search.strip()
+    if len(search) == 0:
+        cursor = quizzes_collection.find({}).skip(skipping_val).limit(limit)
+    else:
+        cursor = quizzes_collection.aggregate([
+            {
+                "$match": {
+                    f"{search_by}": {
+                        "$regex": safe_target,
+                        "$options": "i"
                     }
                 }
+            },
+            {
+                "$skip": skipping_val
+            },
+            {
+                "$limit": limit
             }
-        },
-        {
-            "$skip": skipping_val
-        },
-        {
-            "$limit": limit
-        }
-    ])
-    
-    final_result = list(cursor)
+        ])
 
+    final_result = list(cursor)
     if not final_result:
         return {'message': f'doesnt match any {search_by}'}
 

@@ -3,7 +3,7 @@
     <div class="empty-user-stats" v-if="!userStats">
       <div>
         <h1>You currently have no statistics</h1>
-        <h2>Play more games to get more statistics</h2>
+        <h2>Play more quizzes to get more statistics</h2>
       </div>
     </div>
     <template v-if="userStats">

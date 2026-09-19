@@ -143,14 +143,22 @@ export const useQuizzesStore = defineStore('quizzesStore', () => {
     }
 
     async function searchQuiz(searchBy, search, page) {
+        search = search.trim()
         loading.value = true
         error.value = null
 
         try {
-            const response = await this.$api.get(`/quizzes/${searchBy}/${search}/${page}`)
+            const params = {
+                params: {
+                    search_by: searchBy,
+                    search: search
+                }
+            }
+
+            const response = await this.$api.get(`/quizzes/search/${page}`, params)
             const data = response.data
             quizzes.value = data
-            
+
             return data
         } catch (exception) {
             error.value = exception.message || exception
