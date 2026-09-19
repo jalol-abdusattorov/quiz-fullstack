@@ -1,14 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Register from '@/views/Register.vue'
-import Home from '@/views/Home.vue'
-import Login from '@/views/Login.vue'
-import Logout from '@/views/Logout.vue'
-import Quizzes from '@/views/Quizzes.vue'
 import { useAuthStore } from '@/stores/auth'
-import NotFound from '@/views/NotFound.vue'
-import QuizDetails from '@/views/QuizDetails.vue'
-import QuizBrowser from '@/views/QuizBrowser.vue'
-import TakingQuiz from '@/views/TakingQuiz.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -16,57 +7,67 @@ const router = createRouter({
     {
       path: "/register",
       name: "Register",
-      component: Register,
+      // Normal loading:
+      // component: Register,
+      // Lazy loading:
+      component: () => import('@/views/Register.vue'),
       meta: { requiresGuest: true }
     },
     {
       path: "/",
       name: "Home",
-      component: Home,
+      component: () => import('@/views/Home.vue'),
       meta: { requiresAuth: true }
     },
     {
       path: "/login",
       name: "Login",
-      component: Login,
+      component: () => import('@/views/Login.vue'),
       meta: { requiresGuest: true }
     },
     {
       path: "/logout",
       name: "Logout",
-      component: Logout,
+      component: () => import('@/views/Logout.vue'),
       meta: { requiresAuth: true }
     },
     {
       path: "/quizzes",
       name: "Quizzes",
-      component: Quizzes,
+      component: () => import('@/views/Quizzes.vue'),
       meta: { requiresAuth: true }
     },
     {
       path: "/quiz/:id",
       name: "QuizDetails",
-      component: QuizDetails,
+      component: () => import('@/views/QuizDetails.vue'),
       meta: { requiresAuth: true },
       props: true
     },
     {
       path: "/quizzes/browse",
       name: "QuizBrowser",
-      component: QuizBrowser,
+      component: () => import('@/views/QuizBrowser.vue'),
       meta: { requiresAuth: true }
     },
     {
       path: "/quizzes/start-quiz/:id",
       name: "TakingQuiz",
-      component: TakingQuiz,
+      component: () => import('@/views/TakingQuiz.vue'),
+      meta: { requiresAuth: true },
+      props: true
+    },
+        {
+      path: "/quizzes/submit-quiz/:id",
+      name: "Results",
+      component: () => import('@/views/Results.vue'),
       meta: { requiresAuth: true },
       props: true
     },
     {
       path: '/:pathMatch(.*)*',
       name: 'NotFound',
-      component: NotFound
+      component: () => import('@/views/NotFound.vue'),
     }
   ],
 })

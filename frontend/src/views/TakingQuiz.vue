@@ -1,5 +1,11 @@
 <template>
     <main>
+        <ConfirmModal v-if="showModal" @close="toggleModal">
+            <h1 class="modal-h1">You have answered {{ Object.keys(userAnswers).length }} of {{ questions.length }} questions.</h1>
+            <h2 class="modal-h2">Are you sure you want to submit?</h2>
+            <button @click="handleContinue" class="continue-btn">Continue Quiz</button>
+            <button @click="handleSubmitQuiz" class="submit-quiz-btn">Submit Quiz</button>
+        </ConfirmModal>
         <div class="container">
             <div v-if="quiz" class="quiz-info">
                 <h1>{{ quiz.title }}</h1>
@@ -9,15 +15,30 @@
             <div>
                 <div v-if="currentQuestion" class="question-card">
                     <Question
-                        :key="currentQuestion._id"
-                        :question="currentQuestion"
-                        :saved-answer="userAnswers[currentQuestion._id] ?? null"
-                        @select-answer="handleAnswer"
+                    :key="currentQuestion._id"
+                    :question="currentQuestion"
+                    :saved-answer="userAnswers[currentQuestion._id] ?? null"
+                    @select-answer="handleAnswer"
                     />
                     <div class="actions">
                         <button class="page-btn" @click="prevQuestion" :disabled="currentQuestionNav == 0">Previous</button>
                         <button class="page-btn" @click="nextQuestion" :disabled="currentQuestionNav >= questions.length - 1">Next</button>
-                        <button class="submit-btn">Submit</button>
+                        <button
+                            class="submit-btn"
+                            @click="handleSubmit"
+                            >
+                            Submit
+                        </button>
+                    </div>
+                </div>
+                <div class="question-nav">
+                    <div v-for="(question, index) in questions" :key="question._id">
+                        <button
+                            @click="goToQuestion(index)"
+                            :class="['nav-btn', { 'active': currentQuestionNav == index, 'answered': question._id in userAnswers }]"
+                        >
+                            {{ index + 1 }}
+                        </button>
                     </div>
                 </div>
             </div>
@@ -26,13 +47,15 @@
 </template>
 
 <script>
+import ConfirmModal from '@/components/ConfirmModal.vue';
 import Question from '@/components/Question.vue';
+import router from '@/router';
 import { useQuizzesStore } from '@/stores/QuizzesStore';
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 
     export default {
         props: ['id'],
-        components: { Question },
+        components: { Question, ConfirmModal },
         setup(props) {
             const quizzesStore = useQuizzesStore()
             const quiz = ref(null)
@@ -40,22 +63,46 @@ import { computed, onMounted, onUnmounted, ref } from 'vue';
             const questions = ref([])
             let timerInterval = null
             const userAnswers = ref({})
+            const showModal = ref(false)
 
             const currentQuestion = computed(() => {
                 return questions.value[currentQuestionNav.value] || null
             })
-            // Format raw seconds into MM:SS (e.g., 01:00, 00:59, 00:00)
             const formattedTime = computed(() => {
+                // Format raw seconds into MM:SS (e.g., 01:00, 00:59, 00:00)
                 if (!quiz.value) return "00:00"
                 const minutes = Math.floor(quiz.value.time_limit / 60)
                 const seconds = quiz.value.time_limit % 60
                 return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
             })
 
-            const handleAnswer = (answer) => {                
+            const toggleModal = () => {
+                showModal.value = !showModal.value
+                if (showModal.value) {
+                    stopTimer()
+                } else if (!showModal.value) {
+                    startTimer()
+                }
+            }
+
+            const handleSubmit = () => {
+                toggleModal()
+            }
+
+            const handleContinue = () => {
+                toggleModal()
+            }
+
+            const handleSubmitQuiz = () => {
+                router.push({
+                    name: 'Results',
+                    params: { id: props.id },
+                    query: { answers: JSON.stringify(userAnswers.value) }
+                })
+            }
+
+            const handleAnswer = (answer) => {
                 userAnswers.value[currentQuestion.value._id] = answer
-                console.log("Answer: ", answer);
-                console.log("User Answers: ", userAnswers.value);
             }
             async function nextQuestion() {
                 if (currentQuestionNav.value + 1 >= questions.length) return
@@ -69,6 +116,10 @@ import { computed, onMounted, onUnmounted, ref } from 'vue';
                 questions.value = await quizzesStore.getQuizQuestions(props.id)
             }
 
+            const goToQuestion = (index) => {
+                currentQuestionNav.value = index
+            }
+
             const startTimer = () => {
                 if (timerInterval || quiz.value.time_limit <= 0) return
 
@@ -76,8 +127,9 @@ import { computed, onMounted, onUnmounted, ref } from 'vue';
                     if (quiz.value.time_limit > 0) {
                         quiz.value.time_limit -= 1
                     } else {
-                        alert("Time is up! your answers will be auto submitted!")
+                        alert("Time is up! Quiz will be auto submitted")
                         stopTimer()
+                        handleSubmitQuiz()
                     }
                 }, 1000);
             }
@@ -96,7 +148,7 @@ import { computed, onMounted, onUnmounted, ref } from 'vue';
                 stopTimer()
             })
 
-            return { userAnswers, handleAnswer, startTimer, formattedTime, quiz, quizzesStore, currentQuestionNav, questions, currentQuestion, nextQuestion, prevQuestion }
+            return { handleSubmitQuiz, handleContinue, showModal, handleSubmit, toggleModal, goToQuestion, userAnswers, handleAnswer, startTimer, formattedTime, quiz, quizzesStore, currentQuestionNav, questions, currentQuestion, nextQuestion, prevQuestion }
         }
     }
 </script>
@@ -114,6 +166,84 @@ h1 {
 }
 h2 {
     margin: 10px;
+}
+
+.modal-h1 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 8px;
+}
+.modal-h2 {
+  font-size: 16px;
+  font-weight: 400;
+  color: #4a4a4a;
+  margin-bottom: 20px;
+}
+
+/* Continue quiz button & Submit quiz button final */
+.continue-btn {
+    background: #768eaf;
+    color: #ffffff;
+    padding: 10px;
+    margin: 5px;
+    border: none;
+    border-radius: 9px;
+    cursor: pointer;
+}
+.continue-btn:hover {
+    background: #7287a4;
+}
+.submit-quiz-btn {
+    background-color: #F97316;
+    box-shadow: 0 0 10px rgba(249, 115, 22, 0.6);
+    color: #ffffff;
+    padding: 10px;
+    margin: 5px;
+    border: none;
+    cursor: pointer;
+    border-radius: 9px;
+    transition: background-color 0.2s ease;
+}
+.submit-quiz-btn:hover {
+    background-color: #dd6b19;
+    box-shadow: 0 0 10px rgba(230, 111, 26, 0.6);
+}
+
+
+/* Questions navigator */
+.question-nav {
+    display: flex;
+    gap: 12px;
+    background-color: #121820;
+    padding: 16px;
+    border-radius: 12px;
+}
+.nav-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 6px;
+    border: 2px solid transparent;
+    background-color: #ffffff;
+    color: #121820;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.nav-btn:hover {
+    background-color: #e2e8f0;
+}
+.nav-btn.answered {
+    background-color: #0d9488; /* Soft teal indicator for completed */
+    color: #ffffff;
+}
+.nav-btn.active {
+    background-color: #f97316;
+    color: #ffffff;
+    border-color: #ffffff;
+    box-shadow: 0 0 10px rgba(249, 115, 22, 0.6);
+    transform: scale(1.08);
 }
 
 
@@ -175,10 +305,13 @@ h2 {
     border: none;
     border-radius: 6px;
     margin-left: auto;
+    text-decoration: underline 2px transparent;
+    transition: text-decoration 0.3s ease;
 }
 
 .submit-btn:hover {
   background-color: #EA580C;
+  text-decoration-color: #ffffff;
 }
 
 .submit-btn:active {
