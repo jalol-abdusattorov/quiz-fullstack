@@ -1040,7 +1040,6 @@ def get_quiz_questions(
         for i in range(len(final_result)):
             final_result[i]['_id'] = str(final_result[i]['_id'])
 
-        print("SUCCESS")
         return final_result
     except:
         return invalid_id_exception

@@ -8,10 +8,15 @@
             </div>
             <div>
                 <div v-if="currentQuestion" class="question-card">
-                    <Question :question="currentQuestion"/>
+                    <Question
+                        :key="currentQuestion._id"
+                        :question="currentQuestion"
+                        :saved-answer="userAnswers[currentQuestion._id] ?? null"
+                        @select-answer="handleAnswer"
+                    />
                     <div class="actions">
                         <button class="page-btn" @click="prevQuestion" :disabled="currentQuestionNav == 0">Previous</button>
-                        <button class="page-btn" @click="nextQuestion" :disabled="currentQuestionNav + 1 == questions.length">Next</button>
+                        <button class="page-btn" @click="nextQuestion" :disabled="currentQuestionNav >= questions.length - 1">Next</button>
                         <button class="submit-btn">Submit</button>
                     </div>
                 </div>
@@ -34,9 +39,11 @@ import { computed, onMounted, onUnmounted, ref } from 'vue';
             const currentQuestionNav = ref(0)
             const questions = ref([])
             let timerInterval = null
-            // store user answer to object; question_id : answers
             const userAnswers = ref({})
 
+            const currentQuestion = computed(() => {
+                return questions.value[currentQuestionNav.value] || null
+            })
             // Format raw seconds into MM:SS (e.g., 01:00, 00:59, 00:00)
             const formattedTime = computed(() => {
                 if (!quiz.value) return "00:00"
@@ -45,9 +52,11 @@ import { computed, onMounted, onUnmounted, ref } from 'vue';
                 return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
             })
 
-            const currentQuestion = computed(() => {
-                return questions.value[currentQuestionNav.value] || null
-            })
+            const handleAnswer = (answer) => {                
+                userAnswers.value[currentQuestion.value._id] = answer
+                console.log("Answer: ", answer);
+                console.log("User Answers: ", userAnswers.value);
+            }
             async function nextQuestion() {
                 if (currentQuestionNav.value + 1 >= questions.length) return
                 currentQuestionNav.value++
@@ -87,7 +96,7 @@ import { computed, onMounted, onUnmounted, ref } from 'vue';
                 stopTimer()
             })
 
-            return { startTimer, formattedTime, quiz, quizzesStore, currentQuestionNav, questions, currentQuestion, nextQuestion, prevQuestion }
+            return { userAnswers, handleAnswer, startTimer, formattedTime, quiz, quizzesStore, currentQuestionNav, questions, currentQuestion, nextQuestion, prevQuestion }
         }
     }
 </script>
@@ -165,7 +174,7 @@ h2 {
     padding: 10px 30px;
     border: none;
     border-radius: 6px;
-    margin-left: 770px;
+    margin-left: auto;
 }
 
 .submit-btn:hover {

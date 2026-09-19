@@ -3,23 +3,39 @@
         <h2>{{ question.question }}</h2>
         <div v-for="(option, index) in question.options" :key="option">
             <div class="choice">
-                <input type="radio" name="answer" :value="index" v-model="selectedAnswer">
+                <input
+                    type="radio"
+                    :name="'question_' + question._id"
+                    :value="index"
+                    v-model="selectedAnswer"
+                    @change="sendAnswer"
+                >
+
                 <p>{{ option }}</p>
             </div>
         </div>
-        <p>Your answer: {{ selectedAnswer == 0 ? "A" : selectedAnswer == 1 ? "B" : selectedAnswer == 2 ? "C" : selectedAnswer == 3 ? "D" : "..." }}</p>
     </div>
 </template>
 
 <script>
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 
     export default {
-        props: ['question'],
-        setup(props) {
-            const selectedAnswer = ref(null)
+        props: ['question', 'savedAnswer'],
+        emits: ['select-answer'],
+        setup(props, { emit }) {
+            const selectedAnswer = ref(props.savedAnswer)
 
-            return { selectedAnswer }
+            watch(() => props.savedAnswer, (newVal) => {
+                selectedAnswer.value = newVal;
+            });
+
+            const sendAnswer = () => {
+                // if (!selectedAnswer.value) return
+                emit('select-answer', selectedAnswer.value)
+            }
+
+            return { selectedAnswer, sendAnswer }
         }
     }
 </script>
