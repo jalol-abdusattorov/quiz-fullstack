@@ -53,11 +53,10 @@ import { useAuthStore } from '@/stores/auth';
 import { useQuizzesStore } from '@/stores/QuizzesStore';
 import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import header from '../components/header.vue';
 import QuizzesComponent from '@/components/QuizzesComponent.vue';
 
     export default {
-        components: { header, QuizzesComponent },
+        components: { QuizzesComponent },
         name: "Home",
         setup() {
             const authStore = useAuthStore()

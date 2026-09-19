@@ -988,3 +988,59 @@ def search_quizzes_by(
             final_result[i]['question_ids'][j] = str(final_result[i]['question_ids'][j])
 
     return final_result
+
+
+# AUTHORIZED
+@router.get("/quizzes/{quiz_id}/questions")
+def get_quiz_questions(
+    quiz_id: str,
+    req: Request,
+    _: Annotated[str, Depends(swagger_bearer_scheme)]
+):
+    try:
+        quiz_id = ObjectId(quiz_id)
+
+        cursor = quizzes_collection.aggregate([
+            {
+                '$match': {
+                    '_id': quiz_id
+                }
+            },
+            {
+                '$lookup': {
+                    'from':         'questions', 
+                    'localField':   'question_ids', 
+                    'foreignField': '_id', 
+                    'as':           'questions'
+                }
+            },
+            {
+                '$unwind': { 'path': '$questions' }
+            },
+            {
+                '$group': {
+                    '_id': '$questions._id', 
+                    'question': {
+                        '$first': '$questions.question'
+                    }, 
+                    'options': {
+                        '$first': '$questions.options'
+                    }, 
+                    'category': {
+                        '$first': '$questions.category'
+                    }, 
+                    'difficulty': {
+                        '$first': '$questions.difficulty'
+                    }
+                }
+            }
+        ])
+        
+        final_result = list(cursor)
+        for i in range(len(final_result)):
+            final_result[i]['_id'] = str(final_result[i]['_id'])
+
+        print("SUCCESS")
+        return final_result
+    except:
+        return invalid_id_exception

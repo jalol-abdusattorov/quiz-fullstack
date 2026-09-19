@@ -11,8 +11,6 @@
 </template>
 
 <script>
-import { onMounted } from 'vue';
-
     export default {
         props: ['quiz'],
         setup(props) {
@@ -24,6 +22,8 @@ import { onMounted } from 'vue';
             }
 
             const substring = (sentence) => {
+              if (!sentence) return
+
               if (sentence.length > 50) {
                 sentence = sentence.substring(0, 50) + "..."
               }

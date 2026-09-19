@@ -168,5 +168,22 @@ export const useQuizzesStore = defineStore('quizzesStore', () => {
         }
     }
 
-    return { quizzes, loading, error, getQuizzes, getQuiz, getPopularQuizzes, getQuizzesByCategory, getUserStatistics, getUserRecentAttepmts, filterQuizzes, searchQuiz }
+    async function getQuizQuestions(quizId) {
+        loading.value = true
+        error.value = null
+
+        try {
+            const response = await this.$api.get(`/quizzes/${quizId}/questions`)
+            const data = response.data
+            // console.log(data);
+
+            return data
+        } catch (exception) {
+            error.value = exception.message || exception
+        } finally {
+            loading.value = false
+        }
+    }
+
+    return { getQuizQuestions, quizzes, loading, error, getQuizzes, getQuiz, getPopularQuizzes, getQuizzesByCategory, getUserStatistics, getUserRecentAttepmts, filterQuizzes, searchQuiz }
 })

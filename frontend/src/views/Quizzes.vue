@@ -48,7 +48,7 @@
             </template>
 
             <div v-if="quizzesStore.error">An error has occured</div>
-            <div v-if="quizzesStore.loading">loading data...</div>
+            <div v-if="quizzesStore.loading">Loading data...</div>
         </main>
     </div>
 </template>
@@ -73,6 +73,7 @@ import QuizDetails from './QuizDetails.vue';
             })
 
             async function nextPage() {
+                if (currentPage.value >= 99) return
                 currentPage.value++;
                 if (!isPopularQuizzes.value) {
                   await quizzesStore.getQuizzes(currentPage.value)
@@ -92,17 +93,15 @@ import QuizDetails from './QuizDetails.vue';
             }
 
             async function allQuizzes() {
-              // if (isPopularQuizzes.value) {
               isPopularQuizzes.value = false
               await quizzesStore.getQuizzes(currentPage.value)
-              // }
             }
 
             async function popularQuizzes() {
-              if (!isPopularQuizzes.value) {
+              // if (!isPopularQuizzes.value) {
                 isPopularQuizzes.value = true
                 await quizzesStore.getPopularQuizzes(currentPage.value)
-              }
+              // }
             }
 
             async function handleSelect() {
@@ -161,6 +160,7 @@ import QuizDetails from './QuizDetails.vue';
   font-weight: 500;
 }
 
+/* .page-btn */
 .page-btn {
   background-color: #ffffff;
   border: 1px solid #cbd5e1;
@@ -170,12 +170,6 @@ import QuizDetails from './QuizDetails.vue';
   cursor: pointer;
   transition: background-color 0.15s ease;
 }
-/* .page-btn */
-.all-quizzes:active {
-  background-color: red;
-  border: 1px solid black;
-}
-
 
 .page-btn:hover:not(:disabled) {
   background-color: #f8fafc;

@@ -53,7 +53,8 @@
             <div v-if="quizzesStore.quizzes.length">
                 <QuizzesComponent :quizzes="quizzesStore.quizzes" />
             </div>
-
+            <div v-if="quizzesStore.loading">Loading data...</div>
+            <div v-if="quizzesStore.error">An error has occured</div>
             <p v-if="!quizzesStore.quizzes?.length">This page is empty</p>
         </main>
     </div>
@@ -101,6 +102,7 @@ import { onMounted, ref } from 'vue';
                 }
             }
             async function nextPage() {
+                if (currentPage.value >= 99) return
                 currentPage.value++
                 if (!isSearchingQuizzes.value) {
                     getFilteredQuizzes()

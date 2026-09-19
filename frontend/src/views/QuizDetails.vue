@@ -18,7 +18,6 @@ import { onMounted, ref } from 'vue';
             const quiz = ref({})
             onMounted(async() => {
                 quiz.value = await quizStore.getQuiz(props.id)
-                // console.log(quiz.value);
             })
 
             return { quiz }
