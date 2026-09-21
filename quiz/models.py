@@ -21,5 +21,5 @@ class QuestionRequest(BaseModel):
     difficulty: str = "easy"
 
 class SubmitRequest(BaseModel):
-    attempt_id: int
+    attempt_id: int 
     answers: list[dict] = [{"question_id": "...", "selected_answer": 0}]

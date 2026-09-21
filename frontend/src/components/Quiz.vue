@@ -5,6 +5,8 @@
           <p class="quiz-description">{{ substring(quiz.description) || 'No description provided' }}</p>
           <p class="quiz-category-difficulty">{{ quiz.category }} · {{ quiz.difficulty }}</p>
           <p class="quiz-questions">{{ quiz.question_ids?.length || 0 }} Questions · {{ formatTime(quiz.time_limit) }}</p>
+          <p class="quiz-date">Created at:<br>{{ formatDate(quiz.created_at) }}</p>
+          <p class="quiz-recent-attempt" v-if="quiz.completed_at">Recent attempt:<br>{{ formatDate(quiz.completed_at) }}</p>
       </div>
       <router-link v-if="quiz?._id"  :to="{ name: 'QuizDetails', params: { id: quiz._id } }" class="view-btn">View quiz</router-link>
     </div>
@@ -20,6 +22,29 @@
                 const secs = seconds % 60
                 return `${mins}m ${secs}s`
             }
+            const formatDate = (date) => {
+              const monthMap = {
+                "01": "January",
+                "02": "February",
+                "03": "March",
+                "04": "April",
+                "05": "May",
+                "06": "June",
+                "07": "July",
+                "08": "August",
+                "09": "September",
+                "10": "October",
+                "11": "November",
+                "12": "December"
+              }
+
+              date = date.substring(0, 10)
+              const year = date.slice(0, 4) // Year
+              const month = date.slice(5, 7) // Month
+              const day = date.slice(-2) // Day
+              const fullMonth = monthMap[String(month)]
+              return `Year ${year}, ${day} of ${fullMonth}`
+            }
 
             const substring = (sentence) => {
               if (!sentence) return
@@ -30,7 +55,7 @@
               return sentence
             }
 
-            return { formatTime, substring }
+            return { formatTime, formatDate, substring }
         }
     }
 </script>
@@ -72,6 +97,20 @@
   line-height: 1.5;
   margin: 0;
 }
+.quiz-date {
+  color: #64748b;
+  font-size: 0.875rem;
+  line-height: 1;
+  margin: 0;
+  margin-top: 10px;
+}
+.quiz-recent-attempt {
+  color: #64748b;
+  font-size: 0.875rem;
+  line-height: 1.2;
+  margin: 0;
+  margin-top: 10px;
+}
 
 .quiz-category {
   color: #444;
@@ -88,8 +127,12 @@
 
 .quiz-questions {
   color: #444;
-  line-height: 1;
-  margin: 0;
+  line-height: 0;
+  margin-top: 10px;
+  margin-bottom: 25px;
+}
+.quiz-category-difficulty {
+  color: #444;
 }
 
 .view-btn {

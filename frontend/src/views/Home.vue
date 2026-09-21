@@ -1,9 +1,10 @@
 <template>
   <main>
     <div class="empty-user-stats" v-if="!userStats">
-      <div>
+      <div class="">
         <h1>You currently have no statistics</h1>
         <h2>Play more quizzes to get more statistics</h2>
+        <router-link class="router-link-to-quizzes" :to="{ name: 'Quizzes' }">Quizzes</router-link>
       </div>
     </div>
     <template v-if="userStats">
@@ -15,7 +16,7 @@
             <div class="stat-card blue">
                 <div class="card-header">Average Score</div>
                 <div class="card-body">
-                    <span class="stat-number">{{ userStats.average_score }}</span>
+                    <span class="stat-number">{{ Math.round(userStats.average_score * 100) / 100 }}</span>
             </div>
         </div>
 
@@ -63,7 +64,7 @@ import QuizzesComponent from '@/components/QuizzesComponent.vue';
             const quizzesStore = useQuizzesStore()
             const router = useRouter()
             const userStats = ref(null)
-            const userRecentAttempts = ref(null)
+            const userRecentAttempts = ref([])
 
             async function userStatistics() {
                 userStats.value = await quizzesStore.getUserStatistics(authStore.user.id)
@@ -104,8 +105,16 @@ import QuizzesComponent from '@/components/QuizzesComponent.vue';
   display: flex;
   justify-content: center;
 }
+.router-link-to-quizzes {
+  margin-left: 160px;
+  text-decoration: underline 2px transparent;
+  text-underline-offset: 4px;
+  transition: text-decoration 0.3s ease;
+}
+.router-link-to-quizzes:hover {
+  text-decoration-color: #000;
+}
 
-/* HR */
 hr {
   color: #e7e4e4;
 }

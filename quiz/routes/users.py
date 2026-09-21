@@ -263,6 +263,38 @@ def get_user_recent_attempts(
                 }
             },
             {
+                '$group': {
+                    '_id': '$quiz_id', 
+                    'user_id': {
+                        '$first': '$user_id'
+                    }, 
+                    'quiz_id': {
+                        '$first': '$quiz_id'
+                    }, 
+                    'answers': {
+                        '$first': '$answers'
+                    }, 
+                    'score': {
+                        '$first': '$score'
+                    }, 
+                    'total_questions': {
+                        '$first': '$total_questions'
+                    }, 
+                    'percentage': {
+                        '$first': '$percentage'
+                    }, 
+                    'started_at': {
+                        '$first': '$started_at'
+                    }, 
+                    'completed_at': {
+                        '$first': '$completed_at'
+                    }, 
+                    'time_taken': {
+                        '$first': '$time_taken'
+                    }
+                }
+            },
+            {
                 '$lookup': {
                     'from':         'quizzes', 
                     'localField':   'quiz_id', 

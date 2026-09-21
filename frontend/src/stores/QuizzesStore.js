@@ -5,6 +5,7 @@ export const useQuizzesStore = defineStore('quizzesStore', () => {
     const quizzes = ref([])
     const loading = ref(false)
     const error = ref(null)
+    const result = ref(null)
 
     async function getQuizzes(page) {
         loading.value = true
@@ -185,5 +186,72 @@ export const useQuizzesStore = defineStore('quizzesStore', () => {
         }
     }
 
-    return { getQuizQuestions, quizzes, loading, error, getQuizzes, getQuiz, getPopularQuizzes, getQuizzesByCategory, getUserStatistics, getUserRecentAttepmts, filterQuizzes, searchQuiz }
+    async function startQuiz(quizId) {
+        if (!quizId) return
+        loading.value = true
+        error.value = null
+
+        try {
+            const response = await this.$api.post(`/quizzes/${quizId}/start`)
+            const data = response.data
+            // console.log(data)
+
+            return data
+        } catch (exception) {
+            error.value = exception.message || exception
+        } finally {
+            loading.value = false
+        }
+    }
+
+    async function submitQuiz(quizId, attemptId, userAnswers) {
+        loading.value = true
+        error.value = null
+
+        try {
+            const params = {
+                attempt_id: attemptId,
+                answers: userAnswers
+            }
+
+            const response = await this.$api.post(`/quizzes/${quizId}/submit`, params)
+            const data = response.data
+            setResult(data)
+            // console.log(result.value);
+
+            return data
+        } catch (exception) {
+            error.value = exception.message || exception
+        } finally {
+            loading.value = false
+        }
+    }
+
+    function setResult(newResult) {
+        result.value = newResult
+    }
+
+    function clearResult() {
+        result.value = null
+    }
+
+    return {
+        result,
+        clearResult,
+        setResult,
+        submitQuiz,
+        startQuiz,
+        getQuizQuestions,
+        quizzes,
+        loading,
+        error,
+        getQuizzes,
+        getQuiz,
+        getPopularQuizzes,
+        getQuizzesByCategory,
+        getUserStatistics,
+        getUserRecentAttepmts,
+        filterQuizzes,
+        searchQuiz
+    }
 })

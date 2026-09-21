@@ -11,7 +11,7 @@
                         <h3 class="quiz-difficulty">Difficulty: {{ quiz.difficulty }}</h3>
                         <h3 class="quiz-questions">Questions: {{ quiz.question_ids?.length || 0 }}</h3>
                         <h3 class="quiz-timelimit">Time Limit: {{ formatTime(quiz.time_limit) }}</h3>
-                        <button class="start-btn" @click="handleStart">Start the quiz</button>
+                        <button class="start-btn" :disabled="submitted" @click="handleStart">Start the quiz</button>
                     </div>
                 </div>
             </div>
@@ -20,12 +20,16 @@
 </template>
 
 <script>
+import { useQuizzesStore } from '@/stores/QuizzesStore';
+import { onUnmounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
     export default {
         props: ['quiz'],
         setup(props) {
+            const quizzesStore = useQuizzesStore()
             const router = useRouter()
+            const submitted = ref(false)
 
             const formatTime = (seconds) => {
                 if (!seconds) return
@@ -37,11 +41,16 @@ import { useRouter } from 'vue-router';
             const handleBack = () => {
                 router.back()                
             }
-            const handleStart = () => {
-                router.push({ name: 'TakingQuiz', params: { id: props.quiz.id } })
+            const handleStart = async () => {
+                submitted.value = true
+                const response = await quizzesStore.startQuiz(props.quiz._id)
+                router.push({ name: 'TakingQuiz', params: { id: props.quiz._id, attemptId: response.attempt_id } })
             }
+            onUnmounted(() => {
+                submitted.value = false
+            })
 
-            return { formatTime, handleBack, handleStart }
+            return { submitted, formatTime, handleBack, handleStart }
         }
     }
 </script>
@@ -100,6 +109,10 @@ import { useRouter } from 'vue-router';
 .start-btn:active {
   /* Press effect, shrinks little bit */
   transform: scale(0.98);
+}
+.start-btn:disabled {
+    color: #baaeae;
+    background-color: #944a15;
 }
 
 

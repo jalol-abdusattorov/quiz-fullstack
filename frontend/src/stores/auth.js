@@ -1,3 +1,4 @@
+import { jwtDecode } from 'jwt-decode';
 import axios from 'axios'
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
@@ -16,6 +17,19 @@ function parseJwt(token) {
     } catch (e) {
         return null
     }
+}
+
+export function isTokenExpired(token) {
+  if (!token) return true;
+
+  try {
+    const decoded = jwtDecode(token);
+    const currentTime = Date.now() / 1000;
+
+    return decoded.exp < currentTime;
+  } catch (error) {
+    return true;
+  }
 }
 
 export const useAuthStore = defineStore('auth', () => {

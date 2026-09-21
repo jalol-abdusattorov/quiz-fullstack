@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
+import { isTokenExpired, useAuthStore } from '@/stores/auth'
+import { useQuizzesStore } from '@/stores/QuizzesStore'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -51,18 +52,37 @@ const router = createRouter({
       meta: { requiresAuth: true }
     },
     {
-      path: "/quizzes/start-quiz/:id",
+      path: "/quizzes/start-quiz/:id/:attemptId",
       name: "TakingQuiz",
       component: () => import('@/views/TakingQuiz.vue'),
       meta: { requiresAuth: true },
       props: true
     },
-        {
+    {
       path: "/quizzes/submit-quiz/:id",
       name: "Results",
       component: () => import('@/views/Results.vue'),
-      meta: { requiresAuth: true },
-      props: true
+      beforeEnter: () => {
+        const quiz = useQuizzesStore()
+
+        if (!quiz.result) {
+          return { name: 'Home', replace: true }
+        }
+      },
+      meta: { requiresAuth: true }
+    },
+    {
+      path: "/quizzes/review-answers",
+      name: "ReviewAnswers",
+      component: () => import('@/views/ReviewAnswers.vue'),
+      beforeEnter: () => {
+        const quiz = useQuizzesStore()
+
+        if (!quiz.result) {
+          return { name: 'Home', replace: true }
+        }
+      },
+      meta: { requiresAuth: true }
     },
     {
       path: '/:pathMatch(.*)*',
@@ -74,6 +94,13 @@ const router = createRouter({
 
 router.beforeEach((to, from) => {
   const authStore = useAuthStore()
+
+  if (to.meta.requiresAuth) {
+    if (!authStore.token || isTokenExpired(authStore.token)) {
+      authStore.logout()
+      return { name: 'Login' }
+    }
+  }
 
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
     return { name: "Login" }

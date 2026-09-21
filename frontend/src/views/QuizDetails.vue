@@ -16,6 +16,7 @@ import { onMounted, ref } from 'vue';
         setup(props) {
             const quizStore = useQuizzesStore()   
             const quiz = ref({})
+
             onMounted(async() => {
                 quiz.value = await quizStore.getQuiz(props.id)
             })

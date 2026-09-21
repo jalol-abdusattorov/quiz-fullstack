@@ -8,7 +8,7 @@ from datetime import datetime as dt, timedelta, timezone
 
 from mongodb import *
 from models import *
-from routes.route_utils import swagger_bearer_scheme, check_valid_quiz, update_quiz_json_file_after_starting, find_errors_and_get_score_after_submitting
+from routes.route_utils import swagger_bearer_scheme, check_valid_quiz, update_quiz_json_file_after_starting, validate_user_inputs_and_calculate_result
 from utils import random_id
 
 router = APIRouter()
@@ -140,9 +140,9 @@ def start_quiz(
         update_quiz_json_file_after_starting(_id, str(quiz_id))
 
         return {
-                "attempt_id": _id,
-                "quiz_id": str(quiz_id),
-                "started_at": dt.now()
+            "attempt_id": _id,
+            "quiz_id": str(quiz_id),
+            "started_at": dt.now()
         }
 
     except bson.errors.InvalidId:
@@ -166,7 +166,7 @@ def submit_quiz(
         if not quiz: raise quiz_not_found_exception
         if not user: raise HTTPException(status_code=404, detail="user not found")
 
-        answers, score, quiz_json_started_at = find_errors_and_get_score_after_submitting(request, quiz)
+        answers, score, quiz_json_started_at = validate_user_inputs_and_calculate_result(request, quiz)
 
         started_at = dt.strptime(quiz_json_started_at, "%Y-%m-%d %H:%M:%S")
         completed_at = dt.now()
@@ -190,9 +190,12 @@ def submit_quiz(
         }
 
         results_collection.insert_one(new_result)
-        # avoid returning ObjectId, and dont return answers as it can get large
-        for popping_value in ["_id", "user_id", "quiz_id", "answers"]:
-            new_result.pop(popping_value)
+        # print(new_result['answers'])
+        new_result['_id'] = str(new_result['_id'])
+        new_result["user_id"] = str(new_result["user_id"]) 
+        new_result['quiz_id'] = str(new_result['quiz_id'])
+        for i in range(len(new_result["answers"])):
+            new_result["answers"][i]['question_id'] = str(new_result["answers"][i]['question_id'])
 
         return new_result
     except bson.errors.InvalidId:

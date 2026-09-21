@@ -83,12 +83,12 @@ def update_quiz_json_file_after_starting(_id, quiz_id):
             json.dump(quizzes, f2, indent = 4)
 
 
-def find_errors_and_get_score_after_submitting(request, quiz) -> tuple:
+def validate_user_inputs_and_calculate_result(request, quiz) -> tuple:
     try:
         seen_question_ids = []
         available_answers = [0, 1, 2, 3]
 
-        answered_count = 0
+        # answered_count = 0
         score = 0
         answers = []
         for answer in request.answers:
@@ -110,9 +110,9 @@ def find_errors_and_get_score_after_submitting(request, quiz) -> tuple:
                 score += 1
 
                 answers.append({
-                                "question_id": answer['question_id'],
-                                "selected_answer": answer['selected_answer'],
-                                "is_correct": True
+                    "question_id": answer['question_id'],
+                    "selected_answer": answer['selected_answer'],
+                    "is_correct": True
                 })
 
             else:
@@ -121,10 +121,10 @@ def find_errors_and_get_score_after_submitting(request, quiz) -> tuple:
                     "selected_answer": answer['selected_answer'],
                     "is_correct": False
                 })
-            answered_count += 1
+            # answered_count += 1
 
-        if answered_count != len(quiz['question_ids']):
-            raise HTTPException(status_code=400, detail=f"please answer all of the questions (answered {answered_count}/{len(quiz['question_ids'])})")
+        # if answered_count != len(quiz['question_ids']):
+        #     raise HTTPException(status_code=400, detail=f"please answer all of the questions (answered {answered_count}/{len(quiz['question_ids'])})")
 
         started_at = update_quiz_json_file_after_submitting(request)
 

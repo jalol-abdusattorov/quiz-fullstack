@@ -17,7 +17,7 @@
                     <Question
                     :key="currentQuestion._id"
                     :question="currentQuestion"
-                    :saved-answer="userAnswers[currentQuestion._id] ?? null"
+                    :saved-answer="getSavedAnswer(currentQuestion._id) ?? null"
                     @select-answer="handleAnswer"
                     />
                     <div class="actions">
@@ -35,7 +35,7 @@
                     <div v-for="(question, index) in questions" :key="question._id">
                         <button
                             @click="goToQuestion(index)"
-                            :class="['nav-btn', { 'active': currentQuestionNav == index, 'answered': question._id in userAnswers }]"
+                            :class="['nav-btn', { 'active': currentQuestionNav == index, 'answered': isQuestionAnswered(question._id) }]"
                         >
                             {{ index + 1 }}
                         </button>
@@ -49,12 +49,12 @@
 <script>
 import ConfirmModal from '@/components/ConfirmModal.vue';
 import Question from '@/components/Question.vue';
-import router from '@/router';
 import { useQuizzesStore } from '@/stores/QuizzesStore';
 import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
 
     export default {
-        props: ['id'],
+        props: ['id', 'attemptId'],
         components: { Question, ConfirmModal },
         setup(props) {
             const quizzesStore = useQuizzesStore()
@@ -62,8 +62,11 @@ import { computed, onMounted, onUnmounted, ref } from 'vue';
             const currentQuestionNav = ref(0)
             const questions = ref([])
             let timerInterval = null
-            const userAnswers = ref({})
             const showModal = ref(false)
+            const router = useRouter()
+
+            // [{ "question_id": "...", "selected_answer": "..." }]
+            const userAnswers = ref([])
 
             const currentQuestion = computed(() => {
                 return questions.value[currentQuestionNav.value] || null
@@ -93,16 +96,41 @@ import { computed, onMounted, onUnmounted, ref } from 'vue';
                 toggleModal()
             }
 
-            const handleSubmitQuiz = () => {
-                router.push({
-                    name: 'Results',
-                    params: { id: props.id },
-                    query: { answers: JSON.stringify(userAnswers.value) }
-                })
+            const handleSubmitQuiz = async () => {
+                toggleModal()
+                try {
+                    await quizzesStore.submitQuiz(props.id, props.attemptId, userAnswers.value)
+                    
+                    router.replace({ name: 'Results' })
+                } catch (exception) {
+                    router.replace({ name: "Home" })
+                }
+            }
+
+            const getSavedAnswer = (questionId) => {
+                const entry = userAnswers.value.find(item => item.question_id === questionId)
+                return entry !== undefined ? entry.selected_answer : null
+            }
+
+            const isQuestionAnswered = (questionId) => {
+                return userAnswers.value.some(item => item.question_id === questionId && item.selected_answer !== null);
             }
 
             const handleAnswer = (answer) => {
-                userAnswers.value[currentQuestion.value._id] = answer
+                if (!currentQuestion.value) return
+
+                const existingIndex = userAnswers.value.findIndex(
+                    item => item.question_id === currentQuestion.value._id
+                )
+
+                if (existingIndex !== -1) {
+                    userAnswers.value[existingIndex].selected_answer = answer
+                } else {
+                    userAnswers.value.push({
+                        question_id: currentQuestion.value._id,
+                        selected_answer: answer
+                    })
+                }
             }
             async function nextQuestion() {
                 if (currentQuestionNav.value + 1 >= questions.length) return
@@ -140,6 +168,10 @@ import { computed, onMounted, onUnmounted, ref } from 'vue';
             }
 
             onMounted(async () => {
+                if (!props.id || !props.attemptId) {
+                    router.replace({ name: "Home" })
+                }
+
                 quiz.value = await quizzesStore.getQuiz(props.id)
                 quizQuestions()
                 startTimer()
@@ -148,7 +180,25 @@ import { computed, onMounted, onUnmounted, ref } from 'vue';
                 stopTimer()
             })
 
-            return { handleSubmitQuiz, handleContinue, showModal, handleSubmit, toggleModal, goToQuestion, userAnswers, handleAnswer, startTimer, formattedTime, quiz, quizzesStore, currentQuestionNav, questions, currentQuestion, nextQuestion, prevQuestion }
+            return {
+                quiz,
+                questions,
+                currentQuestionNav,
+                currentQuestion,
+                userAnswers,
+                showModal,
+                formattedTime,
+                getSavedAnswer,
+                isQuestionAnswered,
+                handleAnswer,
+                toggleModal,
+                handleSubmit,
+                handleContinue,
+                handleSubmitQuiz,
+                nextQuestion,
+                prevQuestion,
+                goToQuestion
+            };
         }
     }
 </script>
