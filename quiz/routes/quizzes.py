@@ -8,7 +8,7 @@ from datetime import datetime as dt, timedelta, timezone
 
 from mongodb import *
 from models import *
-from routes.route_utils import swagger_bearer_scheme, check_valid_quiz, update_quiz_json_file_after_starting, validate_user_inputs_and_calculate_result
+from routes.route_utils import swagger_bearer_scheme, check_valid_quiz, validate_user_inputs_and_calculate_result
 from utils import random_id
 
 router = APIRouter()
@@ -131,22 +131,27 @@ def start_quiz(
 ):
     try:
         quiz_id = ObjectId(quiz_id)
-
-        if not quizzes_collection.find_one({ "_id": quiz_id }):
-            raise quiz_not_found_exception
-
-        _id = random_id()
-
-        update_quiz_json_file_after_starting(_id, str(quiz_id))
-
-        return {
-            "attempt_id": _id,
-            "quiz_id": str(quiz_id),
-            "started_at": dt.now()
-        }
-
     except bson.errors.InvalidId:
         raise invalid_id_exception
+
+    if not quizzes_collection.find_one({ "_id": quiz_id }, { "_id": 1 }):
+        raise quiz_not_found_exception
+
+    attempt_id = random_id()
+    started_at = dt.now()
+
+    attempts_collection.insert_one({
+        "attempt_id": attempt_id,
+        "quiz_id": quiz_id,
+        "user_email": request.state.user['sub'],
+        "started_at": started_at
+    })
+
+    return {
+        "attempt_id": attempt_id,
+        "quiz_id": str(quiz_id),
+        "started_at": started_at
+    }
 
 
 # AUTHORIZED
@@ -159,47 +164,47 @@ def submit_quiz(
 ):
     try:
         quiz_id = ObjectId(quiz_id)
-
-        quiz = quizzes_collection.find_one({ "_id": quiz_id })
-        user = users_collection.find_one({ "email": _request.state.user['sub'] })
-
-        if not quiz: raise quiz_not_found_exception
-        if not user: raise HTTPException(status_code=404, detail="user not found")
-
-        answers, score, quiz_json_started_at = validate_user_inputs_and_calculate_result(request, quiz)
-
-        started_at = dt.strptime(quiz_json_started_at, "%Y-%m-%d %H:%M:%S")
-        completed_at = dt.now()
-        time_taken = completed_at - started_at
-        time_taken = int(time_taken.total_seconds())
-
-        total = len(quiz['question_ids'])
-        new_result = {
-            "user_id": user['_id'],
-            "quiz_id": quiz_id,
-
-            "answers": answers,
-
-            "score": score,
-            "total_questions": total,
-            "percentage": score / total * 100,
-
-            "started_at": started_at,
-            "completed_at": completed_at,
-            "time_taken": time_taken
-        }
-
-        results_collection.insert_one(new_result)
-        # print(new_result['answers'])
-        new_result['_id'] = str(new_result['_id'])
-        new_result["user_id"] = str(new_result["user_id"]) 
-        new_result['quiz_id'] = str(new_result['quiz_id'])
-        for i in range(len(new_result["answers"])):
-            new_result["answers"][i]['question_id'] = str(new_result["answers"][i]['question_id'])
-
-        return new_result
     except bson.errors.InvalidId:
         raise invalid_id_exception
+
+    user_email = _request.state.user['sub']
+
+    quiz = quizzes_collection.find_one({ "_id": quiz_id }, { "question_ids": 1 })
+    if not quiz:
+        raise quiz_not_found_exception
+
+    user = users_collection.find_one({ "email": user_email }, { "_id": 1 })
+    if not user:
+        raise HTTPException(status_code=404, detail="user not found")
+
+    answers, score, started_at = validate_user_inputs_and_calculate_result(request, quiz, user_email)
+
+    completed_at = dt.now()
+    
+    time_taken = int((completed_at - started_at).total_seconds())
+    total = len(quiz['question_ids'])
+
+    new_result = {
+        "user_id": user['_id'],
+        "quiz_id": quiz_id,
+        "answers": answers,
+        "score": score,
+        "total_questions": total,
+        "percentage": score / total * 100,
+        "started_at": started_at,
+        "completed_at": completed_at,
+        "time_taken": time_taken
+    }
+
+    res = results_collection.insert_one(new_result)
+
+    new_result['_id'] = str(new_result['_id'])
+    new_result["user_id"] = str(new_result["user_id"]) 
+    new_result['quiz_id'] = str(new_result['quiz_id'])
+    for i in range(len(new_result["answers"])):
+        new_result["answers"][i]['question_id'] = str(new_result["answers"][i]['question_id'])
+
+    return new_result
 
 
 # AUTHORIZED  

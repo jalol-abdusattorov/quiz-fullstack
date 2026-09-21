@@ -19,7 +19,7 @@ import { onMounted, ref } from 'vue';
             const currentQuestionAndAnswerNav = ref(1)
 
             onMounted(() => {
-                fillQuizQuestions()
+                
             })
 
             return { quizStore, currentQuestionAndAnswerNav }

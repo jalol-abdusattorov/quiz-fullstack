@@ -5,7 +5,7 @@ from fastapi import HTTPException, status
 from fastapi.security import HTTPBearer
 from datetime import datetime as dt
 
-from mongodb import questions_collection
+from mongodb import questions_collection, attempts_collection
 from models import QuestionRequest, Quiz, UserRequest
 
 
@@ -71,83 +71,73 @@ def check_valid_quiz(quiz: Quiz):
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"invalid qustion id '{quiz.question_ids[i]}' ")
 
 
-def update_quiz_json_file_after_starting(_id, quiz_id):
-    with open("quiz.json", 'r') as f:
-        quizzes = json.load(f)
-        quizzes.append({
-            "attempt_id": _id,
-            "quiz_id": quiz_id,
-            "started_at": dt.now().strftime("%Y-%m-%d %H:%M:%S")
+def consume_attempt(attempt_id, quiz_id, user_email):
+    attempt = attempts_collection.find_one_and_delete({
+        "attempt_id": attempt_id,
+        "quiz_id": quiz_id,
+        "user_email": user_email,
+    })
+
+    if attempt is None:
+        raise HTTPException(
+            status_code=403, detail="quiz didn't start yet or invalid attempt_id"
+        )
+    return attempt["started_at"]
+ 
+ 
+def validate_user_inputs_and_calculate_result(request, quiz, user_email) -> tuple:
+    quiz_question_ids = set(quiz["question_ids"])
+    available_answers = [0, 1, 2, 3]
+
+    selected = {}
+    for answer in request.answers:
+        try:
+            question_id = ObjectId(answer["question_id"])
+        except bson.errors.InvalidId:
+            raise HTTPException(
+                status_code=400, detail=f"invalid id '{answer['question_id']}'"
+            )
+ 
+        if answer["selected_answer"] not in available_answers:
+            raise HTTPException(
+                status_code=403, detail="only available answers 0, 1, 2 and 3"
+            )
+        if question_id in selected:
+            raise HTTPException(
+                status_code=403, detail="cannot accept duplicate question_ids"
+            )
+        if question_id not in quiz_question_ids:
+            raise HTTPException(
+                status_code=404, detail=f"question not found '{question_id}'"
+            )
+ 
+        selected[question_id] = answer["selected_answer"]
+ 
+    correct_answers = {
+        q["_id"]: q["correct_answer"]
+        for q in questions_collection.find(
+            {"_id": {"$in": list(selected)}}, {"correct_answer": 1}
+        )
+    }
+ 
+    score = 0
+    answers = []
+    for question_id, selected_answer in selected.items():
+        if question_id not in correct_answers:
+            raise HTTPException(
+                status_code=404, detail=f"question not found '{question_id}'"
+            )
+ 
+        is_correct = selected_answer == correct_answers[question_id]
+        if is_correct:
+            score += 1
+ 
+        answers.append({
+            "question_id": question_id,
+            "selected_answer": selected_answer,
+            "is_correct": is_correct,
         })
-        with open('quiz.json', 'w') as f2:
-            json.dump(quizzes, f2, indent = 4)
-
-
-def validate_user_inputs_and_calculate_result(request, quiz) -> tuple:
-    try:
-        seen_question_ids = []
-        available_answers = [0, 1, 2, 3]
-
-        # answered_count = 0
-        score = 0
-        answers = []
-        for answer in request.answers:
-            answer['question_id'] = ObjectId(answer['question_id'])
-
-            if answer['selected_answer'] not in available_answers:
-                raise HTTPException(status_code=403, detail="only available answers 0, 1, 2 and 3")
-
-            if str(answer['question_id']) in seen_question_ids:
-                raise HTTPException(status_code=403, detail="cannot accept duplicate question_ids")
-
-            if answer['question_id'] not in quiz['question_ids']:
-                raise HTTPException(status_code=404, detail=f"question not found '{answer['question_id']}'")
-
-            seen_question_ids.append(str(answer['question_id']))
-            question = questions_collection.find_one({ "_id": answer['question_id'] })
-
-            if answer['selected_answer'] == question['correct_answer']:
-                score += 1
-
-                answers.append({
-                    "question_id": answer['question_id'],
-                    "selected_answer": answer['selected_answer'],
-                    "is_correct": True
-                })
-
-            else:
-                answers.append({
-                    "question_id": answer['question_id'],
-                    "selected_answer": answer['selected_answer'],
-                    "is_correct": False
-                })
-            # answered_count += 1
-
-        # if answered_count != len(quiz['question_ids']):
-        #     raise HTTPException(status_code=400, detail=f"please answer all of the questions (answered {answered_count}/{len(quiz['question_ids'])})")
-
-        started_at = update_quiz_json_file_after_submitting(request)
-
-        return (answers, score, started_at)
-
-    except bson.errors.InvalidId:
-        raise HTTPException(status_code=400, detail=f"invalid id '{answer['question_id']}'")
-
-
-def update_quiz_json_file_after_submitting(request):
-    with open("quiz.json", "r") as f:
-        quizzes = json.load(f)
-
-        for i in quizzes:
-            if request.attempt_id == i['attempt_id']:
-                quiz_json_started_at = i['started_at']
-
-                with open("quiz.json", 'w') as f2:
-                    quizzes.remove(i)
-                    json.dump(quizzes, f2, indent = 4)
-
-                break
-        else:
-            raise HTTPException(status_code=403, detail="quiz didn't started yet or invalid attempt_id")
-
-    return quiz_json_started_at
+ 
+    started_at = consume_attempt(request.attempt_id, quiz["_id"], user_email)
+ 
+    return answers, score, started_at

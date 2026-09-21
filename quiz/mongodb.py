@@ -9,3 +9,4 @@ users_collection = db.users
 quizzes_collection = db.quizzes
 questions_collection = db.questions
 results_collection = db.results
+attempts_collection = db.attempts
