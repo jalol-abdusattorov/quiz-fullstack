@@ -45,3 +45,10 @@ cd quiz
 ```sh
 uvicorn main:app --reload
 ```
+
+### Application
+## Homepage
+![Application preview](./frontend/src/assets/images/Screenshot%202026-09-22%20233205.png)
+
+## Quiz Browsing
+![Application preview](./frontend/src/assets/images/Screenshot%202026-09-22%20233449.png)
