@@ -1,107 +1,126 @@
 <template>
-  <main>
-    <div class="empty-user-stats" v-if="!userStats">
-      <div class="">
-        <h1>You currently have no statistics</h1>
-        <h2>Play more quizzes to get more statistics</h2>
-        <router-link class="router-link-to-quizzes" :to="{ name: 'Quizzes' }">Quizzes</router-link>
-      </div>
-    </div>
+    <div v-if="userStats" class="container">
+        <h1>Your Profile, {{ user.username }} </h1>
+        <!-- <h4>Quizzes Completed: {{ userStats.quizzes_taken }}</h4>
+        <h4>Average Score: {{ Math.round(userStats.average_score * 100) / 100 }}</h4>
+        <h4>Best Score: {{ userStats.best_score }}</h4>
+        <h4>Accuracy: {{ Math.round(userStats.accuracy * 100) / 100 }}</h4> -->
+        
+        <div class="empty-user-stats" v-if="!userStats">
+        <div class="">
+            <h1>You currently have no statistics</h1>
+            <h2>Play more quizzes to get more statistics</h2>
+            <router-link class="router-link-to-quizzes" :to="{ name: 'Quizzes' }">Quizzes</router-link>
+        </div>
+        </div>
 
     <template v-if="userStats">
-      <div class="stats-container">
-        <h2 class="title">Your Statistics</h2>
+        <div class="stats-container">
+            <h2 class="title">Your Statistics</h2>
 
-        <div class="cards-grid">
-        <!-- Average Score Card -->
-            <div class="stat-card blue">
-                <div class="card-header">Average Score</div>
-                <div class="card-body">
-                    <span class="stat-number">{{ Math.round(userStats.average_score * 100) / 100 }}</span>
+            <div class="cards-grid">
+            <!-- Average Score Card -->
+                <div class="stat-card blue">
+                    <div class="card-header">Average Score</div>
+                    <div class="card-body">
+                        <span class="stat-number">{{ Math.round(userStats.average_score * 100) / 100 }}</span>
+                </div>
             </div>
-        </div>
 
-        <!-- Quizzes Completed Card -->
-        <div class="stat-card green">
-            <div class="card-header">Quizzes Completed</div>
-            <div class="card-body">
-                <span class="stat-number">{{ userStats.quizzes_taken }}</span>
-            </div>
-        </div>
-
-        <!-- Best Score Card -->
-        <div class="stat-card orange">
-                <div class="card-header">Best Score</div>
+            <!-- Quizzes Completed Card -->
+            <div class="stat-card green">
+                <div class="card-header">Quizzes Completed</div>
                 <div class="card-body">
-                    <span class="stat-number">{{ userStats.best_score }}</span>
+                    <span class="stat-number">{{ userStats.quizzes_taken }}</span>
+                </div>
+            </div>
+
+            <!-- Best Score Card -->
+            <div class="stat-card orange">
+                    <div class="card-header">Best Score</div>
+                    <div class="card-body">
+                        <span class="stat-number">{{ userStats.best_score }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quizzes Completed Card -->
+            <div class="stat-card red">
+                <div class="card-header">Accuracy</div>
+                <div class="card-body">
+                    <span class="stat-number">{{ userStats.accuracy }}%</span>
                 </div>
             </div>
         </div>
-    </div>
-    <hr>
-
-    <div class="recent-attempts" v-if="userRecentAttempts">
-      <h1>Recent attempts</h1>
-      <div class="quizzes">
-        <QuizzesComponent :quizzes="userRecentAttempts" />
-      </div>
-    </div>
     </template>
-  </main>
+
+
+        <div class="recent-attempts" v-if="userRecentAttempts">
+            <hr>
+            <h1>Recent attempts</h1>
+            <div class="quizzes">
+                <QuizzesComponent :quizzes="userRecentAttempts" />
+            </div>
+        </div>
+    </div>
 </template>
 
 <script>
+import QuizzesComponent from '@/components/QuizzesComponent.vue';
 import { useAuthStore } from '@/stores/auth';
 import { useQuizzesStore } from '@/stores/QuizzesStore';
+import { useUsersStore } from '@/stores/Users';
 import { onMounted, ref } from 'vue';
-import { useRouter } from 'vue-router';
-import QuizzesComponent from '@/components/QuizzesComponent.vue';
 
     export default {
         components: { QuizzesComponent },
-        name: "Home",
         setup() {
             const authStore = useAuthStore()
             const quizzesStore = useQuizzesStore()
-            const router = useRouter()
+            const usersStore = useUsersStore()
+            const userId = authStore.user.id
             const userStats = ref(null)
             const userRecentAttempts = ref([])
+            const user = ref(null)
 
-            async function userStatistics() {
-                userStats.value = await quizzesStore.getUserStatistics(authStore.user.id)
-                if (userStats.value?.message === "this user has no statistics") {
+            async function loadUserStatistics() {
+                userStats.value = await quizzesStore.getUserStatistics(userId)
+                if (userStats.value?.message == "this user has no statistics") {
                     userStats.value = null
                 } else {
                     userStats.value = userStats.value.result[0]
                 }
             }
-
-            async function userRecentAttemptsFunc() {
-                userRecentAttempts.value = await quizzesStore.getUserRecentAttepmts(authStore.user.id)
+            async function loadUserRecentAttempts() {
+                userRecentAttempts.value = await quizzesStore.getUserRecentAttepmts(userId)
                 if (userRecentAttempts.value?.message === "this user has no recent attemtps") {
                   userRecentAttempts.value = null
                 } else {
                   userRecentAttempts.value = userRecentAttempts.value.result
                 }
             }
+            async function loadUserDetails() {
+                if (!userId) return
+                user.value = await usersStore.getUserDetails(userId)
+            }
 
             onMounted(() => {
-              if (!authStore.isAuthenticated) {
-                router.push({ name: "Login" })
-              }
-              // if (!authStore.isAdmin) {
-                userStatistics()
-                userRecentAttemptsFunc()
-              // }
-
+                loadUserStatistics()
+                loadUserRecentAttempts()
+                loadUserDetails()
             })
 
-            return { authStore, userStats, userRecentAttempts }
+            return { user, userRecentAttempts, authStore, userStats }
         }
     }
 </script>
 
 <style scoped>
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
 .empty-user-stats {
   display: flex;
   justify-content: center;
@@ -232,6 +251,17 @@ hr {
 }
 .stat-card.orange .stat-number {
   color: #dd6b20;
+}
+
+/* Red Card Theme */
+.stat-card.red {
+  border: 2px solid #dd3620;
+}
+.stat-card.red .card-header {
+  background-color: #dd3620;
+}
+.stat-card.red .stat-number {
+  color: #b52e1c;
 }
 
 /* Responsive breakpoint for small mobile screens */

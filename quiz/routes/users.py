@@ -75,7 +75,7 @@ def get_user(
             raise user_doesnt_exist_exception
 
         # avoid returning ObjectId, and dont return password
-        status.HTTP_400_BAD_REQUEST['_id'] = str(user['_id'])
+        user['_id'] = str(user['_id'])
         user.pop("password_hash")
 
         return user

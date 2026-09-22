@@ -9,6 +9,7 @@
                     <router-link class="nav-btn" :to="{ name: 'Quizzes' }">Quizzes</router-link>
                     <router-link class="nav-btn" :to="{ name: 'QuizBrowser' }">Browse Quizzes</router-link>
                     <router-link class="nav-btn" :to="{ name: 'Logout' }">Logout</router-link>
+                    <img src="../assets/images/userProfile.jpg" class="profile-icon" alt="User Profile" @click="ToProfilePage">
                 </template>
 
                 <!-- LOGGED IN -->
@@ -17,6 +18,7 @@
                     <router-link class="nav-btn" :to="{ name: 'Quizzes' }">Quizzes</router-link>
                     <router-link class="nav-btn" :to="{ name: 'QuizBrowser' }">Browse Quizzes</router-link>
                     <router-link class="nav-btn" :to="{ name: 'Logout' }">Logout</router-link>
+                    <img src="../assets/images/userProfile.jpg" class="profile-icon" alt="User Profile" @click="ToProfilePage">
                 </template>
 
                 <!-- LOGGED OUT -->
@@ -32,19 +34,40 @@
 <script>
 import { useAuthStore } from '@/stores/auth';
 import { storeToRefs } from 'pinia';
+import { useRouter } from 'vue-router';
 
     export default {
         name: "AppHeader",
         setup() {
             const authStore = useAuthStore()
             const { isAuthenticated, isAdmin } = storeToRefs(authStore)
-            return { isAuthenticated, isAdmin }
+            const router = useRouter()
+
+            const ToProfilePage = () => {
+              router.push({ name: 'UserProfile' })
+            }
+
+            return { ToProfilePage, isAuthenticated, isAdmin }
         }
     }
 </script>
 
 
 <style scoped>
+.profile-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  vertical-align: middle;
+  margin-left: 15px;
+  transition: 0.2s ease;
+  cursor: pointer;
+}
+.profile-icon:hover {
+  transform: translateY(-1px);
+}
+
 .navbar {
   background-color: #ffffff;
   border-bottom: 1px solid #e2e8f0;
