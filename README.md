@@ -19,6 +19,12 @@ npm install pinia
 
 ### Compile and Hot-Reload for Development
 
+## First cd into this directiory
+```sh
+cd frontend
+```
+
+## And Hot-Reload for develepmont
 ```sh
 npm run dev
 ```
@@ -28,4 +34,14 @@ npm run dev
 ## Install all the packages
 ```
 pip install PyJWT fastapi python-dotenv starlette pymongo bcrypt
+```
+
+## First cd into this directiory
+```sh
+cd quiz
+```
+
+## Startup
+```sh
+uvicorn main:app --reload
 ```
