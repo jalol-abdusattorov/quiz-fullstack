@@ -23,6 +23,7 @@
                 return `${mins}m ${secs}s`
             }
             const formatDate = (date) => {
+              if (!date) return
               const monthMap = {
                 "01": "January",
                 "02": "February",

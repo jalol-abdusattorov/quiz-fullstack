@@ -31,7 +31,6 @@ import { ref, watch } from 'vue';
             });
 
             const sendAnswer = () => {
-                // if (!selectedAnswer.value) return
                 emit('select-answer', selectedAnswer.value)
             }
 

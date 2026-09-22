@@ -91,6 +91,7 @@ export const useQuizzesStore = defineStore('quizzesStore', () => {
             return data
         } catch (exception) {
             error.value = exception.message || exc
+            console.error(exception);
         } finally {
             loading.value = false
         }
@@ -199,6 +200,7 @@ export const useQuizzesStore = defineStore('quizzesStore', () => {
             return data
         } catch (exception) {
             error.value = exception.message || exception
+            console.error(exception);
         } finally {
             loading.value = false
         }
@@ -222,6 +224,7 @@ export const useQuizzesStore = defineStore('quizzesStore', () => {
             return data
         } catch (exception) {
             error.value = exception.message || exception
+            console.error(exception);
         } finally {
             loading.value = false
         }
