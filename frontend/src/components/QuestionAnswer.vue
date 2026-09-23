@@ -34,12 +34,12 @@
     <h3 class="question-text">{{ question.question }}</h3>
 
     <div class="details-container">
-      <div class="detail-row">
+      <!-- <div class="detail-row">
         <span class="label">Result:</span>
         <span class="value" :class="isCorrect ? 'text-correct' : 'text-incorrect'">
           {{ isCorrect ? 'Correct' : 'Incorrect' }}
         </span>
-      </div>
+      </div> -->
 
       <div class="detail-row">
         <span class="label">Your Selected Answer:</span>

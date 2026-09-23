@@ -199,6 +199,7 @@ def get_user_history(
             {
                 "$project": {
                     "_id": 0,
+                    "quiz_id": "$quiz_id",
                     "title": "$quiz.title",
                     "percentage": "$percentage",
                     "quiz_started_at": "$started_at"
@@ -206,7 +207,7 @@ def get_user_history(
             },
             {
                 "$group": {
-                    "_id": "$title",
+                    "_id": "$quiz_id",
                     "average_percentage": {
                         "$avg": "$percentage"
                     },
@@ -227,6 +228,9 @@ def get_user_history(
 
         if not final_result:
             return {"message": "this user has no statistics on this page"}
+
+        for i in range(len(final_result)):
+            final_result[i]['_id'] = str(final_result[i]['_id'])
 
         return {"result": final_result}
 
@@ -329,3 +333,95 @@ def get_user_recent_attempts(
 
     except bson.errors.InvalidId:
         raise invalid_id_exception
+
+
+# AUTHORIZED
+@router.get("/users/{user_id}/attempts")
+def get_user_attempts(
+    user_id: str,
+    page: int,
+    request: Request,
+    _: Annotated[str, Depends(swagger_bearer_scheme)]
+):
+    try:
+        user_id = ObjectId(user_id)
+    except bson.errors.InvalidId:
+        raise invalid_id_exception
+
+    if page < 1:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="page should be greater than 0")
+
+    user_exists = users_collection.find_one({ "_id": user_id })
+    if not user_exists:
+        raise user_doesnt_exist_exception
+
+    skipping_value = (page - 1) * 10
+    limit = 10
+
+    cursor = results_collection.aggregate([
+        {
+            '$match': {
+                'user_id': user_id
+            }
+        },
+        {
+            '$lookup': {
+                'from':         'quizzes', 
+                'localField':   'quiz_id', 
+                'foreignField': '_id', 
+                'as':           'quiz_details'
+            }
+        },
+        {
+            '$unwind': {
+                'path': '$quiz_details'
+            }
+        },
+        {
+            '$project': {
+                "user_id": "$user_id",
+                "quiz_id": "$quiz_id",
+                "score": "$score",
+                "total_questions": "$total_questions",
+                "percentage": "$percentage",
+                "started_at": "$started_at",
+                "time_taken": "$time_taken",
+                "quiz_title": "$quiz_details.title",
+                "quiz_category": "$quiz_details.category",
+                "quiz_difficulty": "$quiz_details.difficulty"
+            }
+        },
+        {
+            "$skip": skipping_value
+        },
+        {
+            "$limit": limit
+        } 
+    ])
+
+    cursor2 = results_collection.aggregate([
+        {
+            '$match': {
+                'user_id': user_id
+            }
+        }, {
+            '$group': {
+                '_id': None, 
+                'total_attempts': {
+                    '$sum': 1
+                }
+            }
+        }
+    ])
+
+    final_result = list(cursor)
+    total_attempts = list(cursor2)
+    if not final_result:
+        return {"message": "this user has no attempts on this page"}
+
+    for i in range(len(final_result)):
+        final_result[i]['_id'] = str(final_result[i]['_id'])
+        final_result[i]['user_id'] = str(final_result[i]['user_id'])
+        final_result[i]['quiz_id'] = str(final_result[i]['quiz_id'])
+
+    return {"result": final_result, 'total_attempts': total_attempts[0]['total_attempts']}

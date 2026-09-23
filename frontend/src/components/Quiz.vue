@@ -17,26 +17,32 @@
         props: ['quiz'],
         setup(props) {
             const formatTime = (seconds) => {
-                if (!seconds) return
-                const mins = Math.floor(seconds / 60)
-                const secs = seconds % 60
-                return `${mins}m ${secs}s`
+                if (seconds == null) return '-'
+
+                const total = Math.round(Number(seconds))
+                const h = Math.floor(total / 3600)
+                const m = Math.floor((total % 3600) / 60)
+                const s = total % 60
+
+                if (h > 0) return `${h}h ${m}m ${s}s`
+                if (m > 0) return `${m}m ${String(s).padStart(2, '0')}s`
+                return `${s}s`
             }
             const formatDate = (date) => {
               if (!date) return
               const monthMap = {
-                "01": "January",
-                "02": "February",
-                "03": "March",
-                "04": "April",
+                "01": "Jan",
+                "02": "Feb",
+                "03": "Mar",
+                "04": "Apr",
                 "05": "May",
-                "06": "June",
-                "07": "July",
-                "08": "August",
-                "09": "September",
-                "10": "October",
-                "11": "November",
-                "12": "December"
+                "06": "Jun",
+                "07": "Jul",
+                "08": "Aug",
+                "09": "Sep",
+                "10": "Oct",
+                "11": "Nov",
+                "12": "Dec"
               }
 
               date = date.substring(0, 10)
@@ -44,7 +50,7 @@
               const month = date.slice(5, 7) // Month
               const day = date.slice(-2) // Day
               const fullMonth = monthMap[String(month)]
-              return `Year ${year}, ${day} of ${fullMonth}`
+              return `${day} ${fullMonth}, ${year}`
             }
 
             const substring = (sentence) => {

@@ -9,6 +9,7 @@
                     <router-link class="nav-btn" :to="{ name: 'Quizzes' }">Quizzes</router-link>
                     <router-link class="nav-btn" :to="{ name: 'QuizBrowser' }">Browse Quizzes</router-link>
                     <router-link class="nav-btn" :to="{ name: 'Logout' }">Logout</router-link>
+                    <router-link class="nav-btn" :to="{ name: 'UserAttempts' }">Attempts History</router-link>
                     <img src="../assets/images/userProfile.jpg" class="profile-icon" alt="User Profile" @click="ToProfilePage">
                 </template>
 
@@ -18,6 +19,7 @@
                     <router-link class="nav-btn" :to="{ name: 'Quizzes' }">Quizzes</router-link>
                     <router-link class="nav-btn" :to="{ name: 'QuizBrowser' }">Browse Quizzes</router-link>
                     <router-link class="nav-btn" :to="{ name: 'Logout' }">Logout</router-link>
+                    <router-link class="nav-btn" :to="{ name: 'UserAttempts' }">Attempts History</router-link>
                     <img src="../assets/images/userProfile.jpg" class="profile-icon" alt="User Profile" @click="ToProfilePage">
                 </template>
 

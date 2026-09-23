@@ -11,7 +11,7 @@
             <h3>Total questions: {{ quizStore.result.total_questions }}</h3>
             <h3>Correct: {{ quizStore.result.score }}</h3>
             <h3>Incorrect: {{ quizStore.result.total_questions - quizStore.result.score }}</h3>
-            <h3>Time: {{ quizStore.result.time_taken }}</h3>
+            <h3>Time: {{ formatTime(quizStore.result.time_taken) }}</h3>
         </div>
         <div class="actions">
             <button @click="handleReviewAnswers">Review Answers</button>
@@ -32,6 +32,19 @@ export default {
         const quiz = ref(null)
         const router = useRouter()
 
+        const formatTime = (seconds) => {
+            if (seconds == null) return '-'
+
+            const total = Math.round(Number(seconds))
+            const h = Math.floor(total / 3600)
+            const m = Math.floor((total % 3600) / 60)
+            const s = total % 60
+
+            if (h > 0) return `${h}h ${m}m ${s}s`
+            if (m > 0) return `${m}m ${String(s).padStart(2, '0')}s`
+            return `${s}s`
+        }
+
         const getQuizDetails = async () => {
             quiz.value = await quizStore.getQuiz(quizStore.result.quiz_id)
         }
@@ -51,9 +64,7 @@ export default {
             getQuizDetails()
         })
 
-
-
-        return { handleReviewAnswers, hanldeTryAgain, quizStore, quiz }
+        return { formatTime, handleReviewAnswers, hanldeTryAgain, quizStore, quiz }
     }
 }
 </script>

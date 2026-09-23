@@ -1,11 +1,9 @@
 <template>
   <main>
     <div class="empty-user-stats" v-if="!userStats">
-      <div class="">
-        <h1>You currently have no statistics</h1>
-        <h2>Play more quizzes to get more statistics</h2>
-        <router-link class="router-link-to-quizzes" :to="{ name: 'Quizzes' }">Quizzes</router-link>
-      </div>
+      <h1>You currently have no statistics</h1>
+      <h2>Play more quizzes to get more statistics</h2>
+      <router-link class="router-link-to-quizzes" :to="{ name: 'Quizzes' }">Quizzes</router-link>
     </div>
 
     <template v-if="userStats">
@@ -104,10 +102,10 @@ import QuizzesComponent from '@/components/QuizzesComponent.vue';
 <style scoped>
 .empty-user-stats {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
 }
 .router-link-to-quizzes {
-  margin-left: 160px;
   text-decoration: underline 2px transparent;
   text-underline-offset: 4px;
   transition: text-decoration 0.3s ease;
