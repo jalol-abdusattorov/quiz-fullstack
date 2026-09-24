@@ -1,6 +1,8 @@
 <template>
     <div class="container">
-        <h1 v-if="user">Your Profile, {{ user.username }} </h1>
+
+      <div class="statistics">
+        <h1 v-if="user">{{ user.username }} </h1>
 
         <div class="empty-user-stats" v-if="!userStats">
             <h1>You currently have no statistics</h1>
@@ -8,46 +10,62 @@
             <router-link class="router-link-to-quizzes" :to="{ name: 'Quizzes' }">Quizzes</router-link>
         </div>
 
-    <template v-if="userStats">
-        <div class="stats-container">
-            <h2 class="title">Your Statistics</h2>
+        <template v-if="userStats">
+            <div class="stats-container">
+              <h2 class="title">Your Statistics</h2>
 
-            <div class="cards-grid">
-            <!-- Average Score Card -->
+              <!-- Average Score Card -->
+              <div class="cards-grid">
                 <div class="stat-card blue">
                     <div class="card-header">Average Score</div>
                     <div class="card-body">
                         <span class="stat-number">{{ Math.round(userStats.average_score * 100) / 100 }}</span>
+                    </div>
                 </div>
-            </div>
 
-            <!-- Quizzes Completed Card -->
-            <div class="stat-card green">
-                <div class="card-header">Quizzes Completed</div>
-                <div class="card-body">
-                    <span class="stat-number">{{ userStats.quizzes_taken }}</span>
+                <!-- Quizzes Completed Card -->
+                <div class="stat-card green">
+                    <div class="card-header">Quizzes Completed</div>
+                    <div class="card-body">
+                        <span class="stat-number">{{ userStats.quizzes_taken }}</span>
+                    </div>
                 </div>
-            </div>
 
-            <!-- Best Score Card -->
-            <div class="stat-card orange">
+                <!-- Best Score Card -->
+                <div class="stat-card orange">
                     <div class="card-header">Best Score</div>
                     <div class="card-body">
                         <span class="stat-number">{{ userStats.best_score }}</span>
                     </div>
                 </div>
-            </div>
 
-            <!-- Quizzes Completed Card -->
-            <div class="stat-card red">
-                <div class="card-header">Accuracy</div>
-                <div class="card-body">
-                    <span class="stat-number">{{ Math.round(userStats.accuracy * 100) / 100 }}%</span>
+                <!-- Quizzes Completed Card -->
+                <div class="stat-card red">
+                    <div class="card-header">Accuracy</div>
+                    <div class="card-body">
+                        <span class="stat-number">{{ Math.round(userStats.accuracy * 100) / 100 }}%</span>
+                    </div>
                 </div>
-            </div>
-        </div>
-    </template>
 
+                <!-- Total Questions Answered Card -->
+                <div class="stat-card blue">
+                    <div class="card-header">Questions Answered</div>
+                    <div class="card-body">
+                        <span class="stat-number">{{ userStats.total_questions_answered }}</span>
+                    </div>
+                </div>
+
+                <div class="stat-card green">
+                    <div class="card-header">Correct Answers</div>
+                    <div class="card-body">
+                        <span class="stat-number">{{ userStats.correct_answers }}</span>
+                    </div>
+                </div>
+                
+              </div>
+            </div>
+            <PerformanceOverTime :data="UserPerformanceOverTime || []" />
+        </template>
 
         <div class="recent-attempts" v-if="userRecentAttempts">
             <hr>
@@ -56,6 +74,7 @@
                 <QuizzesComponent :quizzes="userRecentAttempts" />
             </div>
         </div>
+      </div>
     </div>
 </template>
 
@@ -65,9 +84,10 @@ import { useAuthStore } from '@/stores/auth';
 import { useQuizzesStore } from '@/stores/QuizzesStore';
 import { useUsersStore } from '@/stores/Users';
 import { onMounted, ref } from 'vue';
+import PerformanceOverTime from '@/components/PerformanceOverTime.vue';
 
     export default {
-        components: { QuizzesComponent },
+        components: { QuizzesComponent, PerformanceOverTime },
         setup() {
             const authStore = useAuthStore()
             const quizzesStore = useQuizzesStore()
@@ -76,6 +96,7 @@ import { onMounted, ref } from 'vue';
             const userStats = ref(null)
             const userRecentAttempts = ref([])
             const user = ref(null)
+            const UserPerformanceOverTime = ref(null)
 
             async function loadUserStatistics() {
                 userStats.value = await quizzesStore.getUserStatistics(userId)
@@ -97,14 +118,18 @@ import { onMounted, ref } from 'vue';
                 if (!userId) return
                 user.value = await usersStore.getUserDetails(userId)
             }
+            async function loadUserPerformanceOverTime() {
+              UserPerformanceOverTime.value = await usersStore.getUserPerformanceOverTime(userId)
+            }
 
             onMounted(() => {
                 loadUserStatistics()
                 loadUserRecentAttempts()
                 loadUserDetails()
+                loadUserPerformanceOverTime()
             })
 
-            return { user, userRecentAttempts, authStore, userStats }
+            return { user, userRecentAttempts, authStore, userStats, UserPerformanceOverTime }
         }
     }
 </script>
@@ -178,7 +203,7 @@ hr {
 /* General Stat Card Style */
 .stat-card {
   flex: 1;
-  min-width: 180px;
+  min-width: 200px;
   border-radius: 12px;
   overflow: hidden; /* Clips background colors inside rounded borders */
   background-color: #ffffff;

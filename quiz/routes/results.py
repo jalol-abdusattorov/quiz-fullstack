@@ -2,8 +2,6 @@ import bson
 from bson import ObjectId
 from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Request, status
-from datetime import datetime as dt, timezone
-from datetime import timedelta
 
 from mongodb import *
 from routes.route_utils import swagger_bearer_scheme

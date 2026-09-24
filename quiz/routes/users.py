@@ -340,6 +340,7 @@ def get_user_recent_attempts(
 def get_user_attempts(
     user_id: str,
     page: int,
+    sortingBy: str,
     request: Request,
     _: Annotated[str, Depends(swagger_bearer_scheme)]
 ):
@@ -347,6 +348,9 @@ def get_user_attempts(
         user_id = ObjectId(user_id)
     except bson.errors.InvalidId:
         raise invalid_id_exception
+
+    if sortingBy not in ['newestFirst', 'oldestFirst', 'highestAccuracy', 'lowestAccuracy']:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="invalid sorting")
 
     if page < 1:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="page should be greater than 0")
@@ -357,6 +361,18 @@ def get_user_attempts(
 
     skipping_value = (page - 1) * 10
     limit = 10
+
+    sortBy_map = {
+        "newestFirst": "started_at",
+        "oldestFirst": "started_at"
+    }
+
+    if sortingBy in sortBy_map:
+        sortBy = sortBy_map[sortingBy]
+    else:
+        sortBy = "percentage"
+
+    sortOrder = -1 if sortingBy == "newestFirst" or sortingBy == "highestAccuracy" else 1
 
     cursor = results_collection.aggregate([
         {
@@ -389,6 +405,11 @@ def get_user_attempts(
                 "quiz_title": "$quiz_details.title",
                 "quiz_category": "$quiz_details.category",
                 "quiz_difficulty": "$quiz_details.difficulty"
+            }
+        },
+        {
+            "$sort": {
+                sortBy: sortOrder
             }
         },
         {
@@ -425,3 +446,79 @@ def get_user_attempts(
         final_result[i]['quiz_id'] = str(final_result[i]['quiz_id'])
 
     return {"result": final_result, 'total_attempts': total_attempts[0]['total_attempts']}
+
+
+# AUTHORIZED
+@router.get("/users/{user_id}/performance-over-time")
+def get_user_performance_over_time(
+    user_id: str,
+    request: Request,
+    _: Annotated[str, Depends(swagger_bearer_scheme)]
+):
+    try:
+        user_id = ObjectId(user_id)
+    except bson.errors.InvalidId:
+        raise invalid_id_exception
+
+    cursor = results_collection.aggregate([
+        {
+            '$match': {
+                'user_id': user_id
+            }
+        },
+        {
+            '$setWindowFields': {
+                'sortBy': { 'started_at': 1 }, 
+                'output': {
+                    'previous_percentage': {
+                        '$shift': {
+                            'output': '$percentage', 
+                            'by': -1, 
+                            'default': None
+                        }
+                    }
+                }
+            }
+        },
+        {
+            '$project': {
+                'percentage': '$percentage', 
+                'previous_percentage': '$previous_percentage', 
+                'percentage_growth': {
+                    '$cond': {
+                        'if': {
+                            '$or': [
+                                {
+                                    '$eq': [
+                                        '$previous_percentage', None
+                                    ]
+                                }, {
+                                    '$eq': [
+                                        '$previous_percentage', 0
+                                    ]
+                                }
+                            ]
+                        }, 
+                        'then': None, 
+                        'else': {
+                            '$multiply': [
+                                {
+                                    '$divide': [
+                                        { '$subtract': ['$percentage', '$previous_percentage'] },
+                                        '$previous_percentage'
+                                    ]
+                                }, 100
+                            ]
+                        }
+                    }
+                }
+            }
+        }
+    ])
+    
+    final_result = list(cursor)
+
+    for i in range(len(final_result)):
+        final_result[i]['_id'] = str(final_result[i]['_id'])
+
+    return final_result

@@ -17,7 +17,7 @@
 
 <script>
 import { useAuthStore } from '@/stores/auth';
-import { ref } from 'vue';
+import { onUnmounted, ref } from 'vue';
 import { useRouter } from 'vue-router'
 
     export default {
@@ -38,6 +38,9 @@ import { useRouter } from 'vue-router'
                     
                 }
             }
+            onUnmounted(() => {
+                authStore.error = null
+            })
 
             return { handleSubmit, email, password, authStore }
         }

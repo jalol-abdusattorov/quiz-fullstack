@@ -1,60 +1,69 @@
 <template>
-    <main class="container" v-if="userAttempts">
-        <div class="page-header">
-            <div>
-                <h1>My Attempts</h1>
-                <p>{{ totalAttempts }} attempts in total</p>
+    <main class="container" >
+        <template v-if="!userAttempts">
+            <div class="empty-user-stats">
+                <h1>You currently have no statistics</h1>
+                <h2>Play more quizzes to get more statistics</h2>
+                <router-link class="router-link-to-quizzes" :to="{ name: 'Quizzes' }">Quizzes</router-link>
             </div>
-            <label class="sort">
-                Sort by
-                <select>
-                    <option value="newestFirst">Newest first</option>
-                    <option value="oldestFirst">Oldest first</option>
-                    <option value="highestAccuracy">Highest accuracy</option>
-                    <option value="lowestAccuracy">Lowest accuracy</option>
-                </select>
-            </label>
-        </div>
+        </template>
 
-        <section class="table-card">
-            <div class="row head">
-                <span>Quiz</span>
-                <span>Date</span>
-                <span>Score</span>
-                <span>Percentage</span>
-                <span>Time taken</span>
-                <span></span>
-            </div>
-            
-            <div class="row" v-for="attempt in userAttempts" :key="attempt.id">
+        <template v-if="userAttempts">
+            <div class="page-header">
                 <div>
-                    <div class="quiz-name">{{ attempt.quiz_title }}</div>
-                    <div class="quiz-meta">{{ attempt.quiz_category }} · {{ attempt.quiz_difficulty }}</div>
+                    <h1>My Attempts</h1>
+                    <p>{{ totalAttempts }} attempts in total</p>
                 </div>
-                <div data-label="Date">{{ formatDate(attempt.started_at) }}</div>
-                <div data-label="Score">{{ attempt.score }} / {{ attempt.total_questions }}</div>
-                <div data-label="Percentage">
-                    <span class="badge" :class="level(attempt.percentage)">{{ Math.round(attempt.percentage * 100) / 100 }}%</span>
-                    <div class="bar">
-                        <span :class="level(attempt.percentage)" :style="{ width: attempt.percentage + '%' }"></span>
-                    </div>
-                </div>
-                <div data-label="Time taken">{{ formatTime(attempt.time_taken) }}</div>
-                <!-- Fix: router-link -->
-                <button class="btn" @click="ViewQuizResult(attempt._id)">View result</button>
-                <!-- <p>{{ attempt }}</p> -->
+                <label class="sort">
+                    Sort by
+                    <select v-model="sortingBy" @change="loadUserAttempts">
+                        <option value="newestFirst">Newest first</option>
+                        <option value="oldestFirst">Oldest first</option>
+                        <option value="highestAccuracy">Highest accuracy</option>
+                        <option value="lowestAccuracy">Lowest accuracy</option>
+                    </select>
+                </label>
             </div>
-        </section>
 
-        <div class="pagination">
-            <span class="count">Showing {{ userAttempts.length }} of {{ totalAttempts }}</span>
-            <div class="pager">
-                <span class="page">Page 1</span>
-                <button @click="prevPage" :disabled="currentPage <= 1">Previous</button>
-                <button @click="nextPage" :disabled="currentPage > totalAttempts % 10">Next</button>
+            <section class="table-card">
+                <div class="row head">
+                    <span>Quiz</span>
+                    <span>Date</span>
+                    <span>Score</span>
+                    <span>Percentage</span>
+                    <span>Time taken</span>
+                    <span></span>
+                </div>
+                
+                <div class="row" v-for="attempt in userAttempts" :key="attempt.id">
+                    <div>
+                        <div class="quiz-name">{{ attempt.quiz_title }}</div>
+                        <div class="quiz-meta">{{ attempt.quiz_category }} · {{ attempt.quiz_difficulty }}</div>
+                    </div>
+                    <div data-label="Date">{{ formatDate(attempt.started_at) }}</div>
+                    <div data-label="Score">{{ attempt.score }} / {{ attempt.total_questions }}</div>
+                    <div data-label="Percentage">
+                        <span class="badge" :class="level(attempt.percentage)">{{ Math.round(attempt.percentage * 100) / 100 }}%</span>
+                        <div class="bar">
+                            <span :class="level(attempt.percentage)" :style="{ width: attempt.percentage + '%' }"></span>
+                        </div>
+                    </div>
+                    <div data-label="Time taken">{{ formatTime(attempt.time_taken) }}</div>
+                    <!-- Fix: router-link -->
+                    <button class="btn" @click="ViewQuizResult(attempt._id)">View result</button>
+                    <!-- <p>{{ attempt }}</p> -->
+                </div>
+            </section>
+
+            <div class="pagination">
+                <span class="count">Showing {{ userAttempts.length }} of {{ totalAttempts }}</span>
+                <div class="pager">
+                    <span class="page">Page 1</span>
+                    <button @click="prevPage" :disabled="currentPage <= 1">Previous</button>
+                    <button @click="nextPage" :disabled="currentPage > totalAttempts / 10">Next</button>
+                </div>
             </div>
-        </div>
-        <!-- <p>{{ userAttempts }}</p> -->
+        </template>
     </main>
 </template>
 
@@ -76,6 +85,7 @@ import { useRouter } from 'vue-router';
             const totalAttempts = ref(0)
             const currentPage = ref(1)
             const router = useRouter()
+            const sortingBy = ref("newestFirst")
             const userId = computed(() => {
                 return authStore.user.id || null
             })
@@ -96,7 +106,7 @@ import { useRouter } from 'vue-router';
             async function loadUserAttempts() {
                 if (userId.value == null) return
 
-                userAttempts.value = await usersStore.getUserAttempts(userId.value, currentPage.value)
+                userAttempts.value = await usersStore.getUserAttempts(userId.value, currentPage.value, sortingBy.value)
                 if (userAttempts.value?.message == "this user has no attempts on this page") {
                     userAttempts.value = null
                     return
@@ -154,6 +164,7 @@ import { useRouter } from 'vue-router';
             })
 
             return {
+                sortingBy,
                 ViewQuizResult,
                 nextPage,
                 prevPage,
@@ -162,7 +173,8 @@ import { useRouter } from 'vue-router';
                 level,
                 formatDate,
                 totalAttempts,
-                formatTime
+                formatTime,
+                loadUserAttempts
             }
         }
     }
@@ -235,6 +247,12 @@ import { useRouter } from 'vue-router';
     border-radius: 8px;
     background: var(--card);
     color: var(--text);
+}
+
+.empty-user-stats {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 /* Table */

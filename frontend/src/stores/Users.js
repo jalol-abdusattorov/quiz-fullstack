@@ -23,7 +23,7 @@ export const useUsersStore = defineStore('UsersStore', () => {
         }
     }
 
-    async function getUserAttempts(userId, page) {
+    async function getUserAttempts(userId, page, sortingBy) {
         if (page < 0) { 
             return
         }
@@ -34,7 +34,8 @@ export const useUsersStore = defineStore('UsersStore', () => {
         try {
             const params = {
                 params: {
-                    page: page
+                    page: page,
+                    sortingBy: sortingBy
                 }
             }
 
@@ -51,10 +52,29 @@ export const useUsersStore = defineStore('UsersStore', () => {
         }
     }
 
+    async function getUserPerformanceOverTime(userId) {
+        loading.value = true
+        error.value = null
+
+        try {
+            const response = await this.$api.get(`/users/${userId}/performance-over-time`);
+            const data = response.data;
+            console.log(data);
+
+            return data
+        } catch (exception) {
+            error.value = exception.message || exception
+            console.error(exception);
+        } finally {
+            loading.value = false
+        }
+    }
+
     return {
         loading,
         error,
         getUserDetails,
-        getUserAttempts
+        getUserAttempts,
+        getUserPerformanceOverTime
     }
 })
