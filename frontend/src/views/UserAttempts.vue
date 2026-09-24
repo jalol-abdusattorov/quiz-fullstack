@@ -36,12 +36,13 @@
                 <div data-label="Percentage">
                     <span class="badge" :class="level(attempt.percentage)">{{ Math.round(attempt.percentage * 100) / 100 }}%</span>
                     <div class="bar">
-                    <span :class="level(attempt.percentage)" :style="{ width: attempt.percentage + '%' }"></span>
+                        <span :class="level(attempt.percentage)" :style="{ width: attempt.percentage + '%' }"></span>
                     </div>
                 </div>
                 <div data-label="Time taken">{{ formatTime(attempt.time_taken) }}</div>
                 <!-- Fix: router-link -->
-                <router-link class="btn" to="#">View result</router-link>
+                <button class="btn" @click="ViewQuizResult(attempt._id)">View result</button>
+                <!-- <p>{{ attempt }}</p> -->
             </div>
         </section>
 
@@ -53,21 +54,28 @@
                 <button @click="nextPage" :disabled="currentPage > totalAttempts % 10">Next</button>
             </div>
         </div>
+        <!-- <p>{{ userAttempts }}</p> -->
     </main>
 </template>
 
 <script>
 import { useAuthStore } from '@/stores/auth';
+import { useQuizzesStore } from '@/stores/QuizzesStore';
+import { useResultsStore } from '@/stores/Results';
 import { useUsersStore } from '@/stores/Users';
 import { computed, onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
 
     export default {
         setup() {
             const authStore = useAuthStore()
             const usersStore = useUsersStore()
+            const resultsStore = useResultsStore()
+            const quizzesStore = useQuizzesStore()
             const userAttempts = ref(null)
             const totalAttempts = ref(0)
             const currentPage = ref(1)
+            const router = useRouter()
             const userId = computed(() => {
                 return authStore.user.id || null
             })
@@ -95,6 +103,14 @@ import { computed, onMounted, ref } from 'vue';
                 }
                 totalAttempts.value = userAttempts.value.total_attempts
                 userAttempts.value = userAttempts.value.result
+            }
+
+            async function ViewQuizResult(resultId) {
+                if (!resultId) return
+                const response = await resultsStore.getResult(resultId)
+                quizzesStore.setResult(response)
+
+                router.replace({ name: "ReviewAnswers" })
             }
 
             const formatTime = (seconds) => {
@@ -137,7 +153,17 @@ import { computed, onMounted, ref } from 'vue';
                 loadUserAttempts()
             })
 
-            return { nextPage, prevPage, userAttempts, currentPage, level, formatDate, totalAttempts, formatTime }
+            return {
+                ViewQuizResult,
+                nextPage,
+                prevPage,
+                userAttempts,
+                currentPage,
+                level,
+                formatDate,
+                totalAttempts,
+                formatTime
+            }
         }
     }
 </script>

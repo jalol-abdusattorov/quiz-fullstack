@@ -42,7 +42,7 @@
             <div class="stat-card red">
                 <div class="card-header">Accuracy</div>
                 <div class="card-body">
-                    <span class="stat-number">{{ userStats.accuracy }}%</span>
+                    <span class="stat-number">{{ Math.round(userStats.accuracy * 100) / 100 }}%</span>
                 </div>
             </div>
         </div>
