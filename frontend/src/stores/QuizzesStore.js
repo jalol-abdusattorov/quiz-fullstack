@@ -238,7 +238,28 @@ export const useQuizzesStore = defineStore('quizzesStore', () => {
         result.value = null
     }
 
+    async function getQuizLeaderboardRankings(quizId, page) {
+        if (page < 1) return
+
+        loading.value = true
+        error.value = null
+
+        try {
+            const response = await this.$api.get(`/quizzes/${quizId}/leaderboard-rankings/${page}`)
+            const data = response.data
+            // console.log(data);
+
+            return data
+        } catch (exception) {
+            error.value = exception.message || exception
+            console.error(exception);
+        } finally {
+            loading.value = false
+        }
+    }
+
     return {
+        getQuizLeaderboardRankings,
         result,
         clearResult,
         setResult,

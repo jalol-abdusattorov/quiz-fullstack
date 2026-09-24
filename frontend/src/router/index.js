@@ -90,11 +90,18 @@ const router = createRouter({
       component: () => import('@/views/UserProfile.vue'),
       meta: { requiresAuth: true }
     },
-      {
+    {
       path: "/attempts/history",
       name: "UserAttempts",
       component: () => import('@/views/UserAttempts.vue'),
       meta: { requiresAuth: true }
+    },
+    {
+      path: "/leaderboard/:quizId",
+      name: "Leaderboard",
+      component: () => import('@/views/Leaderboard.vue'),
+      meta: { requiresAuth: true },
+      props: true
     },
     {
       path: '/:pathMatch(.*)*',

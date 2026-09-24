@@ -437,7 +437,8 @@ def get_quiz_leaderboard_rankings(
                 "$project": {
                     "_id": 0,
                     "username": "$user_details.username",
-                    "percentage": "$percentage"
+                    "percentage": "$percentage",
+                    "time_taken": "$time_taken"
                 }
             },
             {
@@ -445,6 +446,9 @@ def get_quiz_leaderboard_rankings(
                     "_id": "$username",
                     "percentage": {
                         "$first": "$percentage"
+                    },
+                    "time_taken": {
+                        "$first": "$time_taken"
                     }
                 }
             },
@@ -478,7 +482,7 @@ def get_quiz_leaderboard_rankings(
         elif not final_result and page != 1:
             return {'message': 'this quiz has no statistics on this page'}
         
-        return {"results": final_result}
+        return {"result": final_result}
 
     except bson.errors.InvalidId:
         raise invalid_id_exception

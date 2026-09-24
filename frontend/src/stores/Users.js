@@ -59,7 +59,7 @@ export const useUsersStore = defineStore('UsersStore', () => {
         try {
             const response = await this.$api.get(`/users/${userId}/performance-over-time`);
             const data = response.data;
-            console.log(data);
+            // console.log(data);
 
             return data
         } catch (exception) {

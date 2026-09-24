@@ -15,7 +15,7 @@
         </div>
         <div class="actions">
             <button @click="handleReviewAnswers">Review Answers</button>
-            <button>Leaderboard</button>
+            <button @click="handleLeaderboard">Leaderboard</button>
             <button @click="hanldeTryAgain">Try Again</button>
         </div>
     </div>
@@ -56,6 +56,10 @@ export default {
             router.replace({ name: 'ReviewAnswers' })
         }
 
+        const handleLeaderboard = () => {
+            router.push({ name: 'Leaderboard', params: { quizId: quiz.value._id } })
+        }
+
         onMounted(() => {
             if (!quizStore.result) {
                 router.replace({ name: 'Home' })
@@ -64,7 +68,7 @@ export default {
             getQuizDetails()
         })
 
-        return { formatTime, handleReviewAnswers, hanldeTryAgain, quizStore, quiz }
+        return { handleLeaderboard, formatTime, handleReviewAnswers, hanldeTryAgain, quizStore, quiz }
     }
 }
 </script>

@@ -12,6 +12,9 @@
                         <h3 class="quiz-questions">Questions: {{ quiz.question_ids?.length || 0 }}</h3>
                         <h3 class="quiz-timelimit">Time Limit: {{ formatTime(quiz.time_limit) }}</h3>
                         <button class="start-btn" :disabled="submitted" @click="handleStart">Start the quiz</button>
+                        <div class="actions">
+                            <button @click="handleLeaderboard">Leaderboard</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -46,11 +49,16 @@ import { useRouter } from 'vue-router';
                 const response = await quizzesStore.startQuiz(props.quiz._id)
                 router.push({ name: 'TakingQuiz', params: { id: props.quiz._id, attemptId: response.attempt_id } })
             }
+
+            const handleLeaderboard = () => {
+                router.push({ name: "Leaderboard", params: { quizId: props.quiz._id } })
+            }
+
             onUnmounted(() => {
                 submitted.value = false
             })
 
-            return { submitted, formatTime, handleBack, handleStart }
+            return { submitted, formatTime, handleBack, handleStart, handleLeaderboard }
         }
     }
 </script>
@@ -63,6 +71,38 @@ import { useRouter } from 'vue-router';
     min-height: 100vh;
     margin-top: 20px;
 }
+
+.actions {
+    font-family: inherit;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: center;
+}
+
+.actions button {
+    flex: 1 1 130px;
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #374151;
+    background: #ffffff;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    margin-top: 10px;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, transform 0.05s;
+}
+
+.actions button:hover {
+    background: #f3f4f6;
+    border-color: #9ca3af;
+}
+
+.actions button:active {
+    transform: translateY(1px);
+}
+
 
 /* Quiz Card */
 .quiz-card {
