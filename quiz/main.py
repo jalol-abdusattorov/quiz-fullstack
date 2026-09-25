@@ -11,6 +11,7 @@ from auth.routes.auth_router import auth_router
 from routes.quizzes import router as quizzes_router
 from routes.questions import router as questions_router
 from routes.results import router as results_router
+from routes.admin import router as admin_router
 
 dotenv_path = find_dotenv()
 load_dotenv(dotenv_path)
@@ -39,6 +40,10 @@ openapi_tags = [
     {
         "name": "Results",
         "description": "Results"
+    },
+    {
+        "name": "Admin",
+        "description": "Admin"
     }
 ]
 
@@ -97,3 +102,4 @@ app.include_router(auth_router, prefix="/api",)
 app.include_router(quizzes_router, tags=["Quizzes"])
 app.include_router(questions_router, tags=["Questions"])
 app.include_router(results_router, tags=["Results"])
+app.include_router(admin_router, tags=["Admin"])

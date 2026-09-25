@@ -1,5 +1,6 @@
 <template>
     <main>
+        <p v-if="authStore.loading">Loading...</p>
         <form @submit.prevent="handleSubmit">
             <label>Username: </label>
             <input v-model="username" type="username" required>
@@ -9,6 +10,9 @@
 
             <label>Password: </label>
             <input v-model="password" type="password" required>
+
+            <label>Password Confirmation: </label>
+            <input v-model="passwordConfirmation" type="password" required>
 
             <div class="terms">
                 <input type="checkbox" v-model="termsAccepted" required>
@@ -27,7 +31,7 @@
 <script>
     import { useRouter } from 'vue-router';
     import { useAuthStore } from '@/stores/auth';
-    import { ref } from 'vue';
+    import { onUnmounted, ref } from 'vue';
 
     export default {
         name: "Register",
@@ -40,18 +44,41 @@
             const username = ref('')
             const email = ref('')
             const password = ref('')
+            const passwordConfirmation = ref('')
 
             const handleSubmit = async () => {
+                if (password.value !== passwordConfirmation.value) {
+                    authStore.error = "Password doesn't match confirmation password"
+                    passwordConfirmation.value = ''
+                    return
+                }
                 try {
-                    await authStore.register({ username: username.value, email: email.value, password: password.value })
-                    await authStore.login({ email: email.value, password: password.value })
-                    router.push({ name: "Home" })
-                } catch (exc) {
+                    const response = await authStore.register({
+                        username: username.value,
+                        email: email.value,
+                        password: password.value
+                    })
 
+                    if (response === "error") {
+                        return
+                    }
+
+                    await authStore.login({
+                        email: email.value,
+                        password: password.value
+                    })
+
+                    router.push({ name: "Home" })
+                } catch (err) {
+                    console.error(err)
                 }
             }
 
-            return { handleSubmit, username, email, password, termsAccepted, authStore }
+            onUnmounted(() => {
+                authStore.error = null
+            })
+
+            return { handleSubmit, username, email, password, passwordConfirmation, termsAccepted, authStore }
         }
     }
 </script>

@@ -3,6 +3,7 @@
         <form @submit.prevent="handleSubmit">
             <label>Email</label>
             <input v-model="email" type="email" required>
+
             <label>Password</label>
             <input v-model="password" type="password" required>
 
@@ -33,7 +34,6 @@ import { useRouter } from 'vue-router'
                 try {
                     await authStore.login({ email: email.value, password: password.value })
                     router.push({ name: "Home" })
-                    error.value = null
                 } catch (exc) {
                     
                 }

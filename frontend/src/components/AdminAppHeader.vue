@@ -1,33 +1,10 @@
 <template>
     <div>
-        <header class="navbar">
+        <!-- ADMIN -->
+        <header class="navbar" v-if="isAdmin">
             <router-link :to="{ name: 'Home' }" class="brand">Quiz</router-link>
             <nav class="router-links">
-                <!-- ADMIN -->
-                <template v-if="isAdmin">
-                    <router-link class="nav-btn" :to="{ name: 'Home' }">Home</router-link>
-                    <router-link class="nav-btn" :to="{ name: 'Quizzes' }">Quizzes</router-link>
-                    <router-link class="nav-btn" :to="{ name: 'QuizBrowser' }">Browse Quizzes</router-link>
-                    <router-link class="nav-btn" :to="{ name: 'UserAttempts' }">Attempts History</router-link>
-                    <router-link class="nav-btn" :to="{ name: 'Logout' }">Logout</router-link>
-                    <img src="../assets/images/userProfile.jpg" class="profile-icon" alt="User Profile" @click="ToProfilePage">
-                </template>
-
-                <!-- LOGGED IN -->
-                <template v-else-if="isAuthenticated">
-                    <router-link class="nav-btn" :to="{ name: 'Home' }">Home</router-link>
-                    <router-link class="nav-btn" :to="{ name: 'Quizzes' }">Quizzes</router-link>
-                    <router-link class="nav-btn" :to="{ name: 'QuizBrowser' }">Browse Quizzes</router-link>
-                    <router-link class="nav-btn" :to="{ name: 'UserAttempts' }">Attempts History</router-link>
-                    <router-link class="nav-btn" :to="{ name: 'Logout' }">Logout</router-link>
-                    <img src="../assets/images/userProfile.jpg" class="profile-icon" alt="User Profile" @click="ToProfilePage">
-                </template>
-
-                <!-- LOGGED OUT -->
-                <template v-else>
-                    <router-link class="nav-btn" :to="{ name: 'Login' }">Login</router-link>
-                    <router-link class="nav-btn" :to="{ name: 'Register' }">Register</router-link>
-                </template>
+                <router-link class="nav-btn" :to="{ name: 'AdminDashboard' }">Dashboard</router-link>
             </nav>
         </header>
     </div>
@@ -36,20 +13,26 @@
 <script>
 import { useAuthStore } from '@/stores/auth';
 import { storeToRefs } from 'pinia';
+import { onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 
     export default {
         name: "AppHeader",
         setup() {
             const authStore = useAuthStore()
-            const { isAuthenticated, isAdmin } = storeToRefs(authStore)
+            const { isAdmin } = storeToRefs(authStore)
             const router = useRouter()
 
             const ToProfilePage = () => {
               router.push({ name: 'UserProfile' })
             }
+            onMounted(() => {
+                if (!authStore.isAdmin) {
+                    router.replace({ name: "Login" })
+                }
+            })
 
-            return { ToProfilePage, isAuthenticated, isAdmin }
+            return { ToProfilePage, isAdmin }
         }
     }
 </script>

@@ -91,7 +91,7 @@ import { useRouter } from 'vue-router';
             })
 
             const nextPage = () => {
-                if (currentPage.value > totalAttempts.value % 10) return
+                if (currentPage.value > totalAttempts.value / 10) return
                 currentPage.value++
                 loadUserAttempts()
             }

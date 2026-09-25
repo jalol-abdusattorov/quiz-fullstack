@@ -98,10 +98,8 @@ import QuizDetails from './QuizDetails.vue';
             }
 
             async function popularQuizzes() {
-              // if (!isPopularQuizzes.value) {
-                isPopularQuizzes.value = true
-                await quizzesStore.getPopularQuizzes(currentPage.value)
-              // }
+              isPopularQuizzes.value = true
+              await quizzesStore.getPopularQuizzes(currentPage.value)
             }
 
             async function handleSelect() {

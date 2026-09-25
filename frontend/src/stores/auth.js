@@ -1,5 +1,5 @@
+import api from '@/api/axios';
 import { jwtDecode } from 'jwt-decode';
-import axios from 'axios'
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 
@@ -62,11 +62,17 @@ export const useAuthStore = defineStore('auth', () => {
         error.value = null
 
         try {
-            const response = await axios.post('http://localhost:8000/users', credentials)
+            const response = await api.post('/users', credentials)
             const data = response.data
 
-            const tokenValue = data.token
+            if (response.status === 226) {
+                const message = response.data?.detail || response.data?.message || 'Email is already used'
+                error.value = message
+                return 'error'
+            }
 
+            const tokenValue = data.token
+            
             if (data.id && tokenValue) {
                 const userData = { id: data.id, email: credentials.email }
                 setAuthData(userData, tokenValue)
@@ -75,10 +81,10 @@ export const useAuthStore = defineStore('auth', () => {
             return data
         } catch (exc) {
             error.value =
-                err.response?.data?.detail ||
-                err.response?.data?.message ||
+                exc.response?.data?.detail ||
+                exc.response?.data?.message ||
                 'Registration failed'
-            throw err
+            throw exc
         } finally {
             loading.value = false
         }
@@ -93,7 +99,7 @@ export const useAuthStore = defineStore('auth', () => {
             formData.append('username', credentials.email)
             formData.append('password', credentials.password)
 
-            const response = await axios.post('http://localhost:8000/api/auth/login', formData, {
+            const response = await api.post('/api/auth/login', formData, {
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded'
                 }
@@ -114,6 +120,7 @@ export const useAuthStore = defineStore('auth', () => {
                 err.response?.data?.detail ||
                 err.response?.data?.message ||
                 'Invalid email or password'
+            console.error(err);
             throw err
         } finally {
             loading.value = false

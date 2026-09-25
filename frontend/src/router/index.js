@@ -6,19 +6,16 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
-      path: "/register",
-      name: "Register",
-      // Normal loading:
-      // component: Register,
-      // Lazy loading:
-      component: () => import('@/views/Register.vue'),
-      meta: { requiresGuest: true }
-    },
-    {
       path: "/",
       name: "Home",
       component: () => import('@/views/Home.vue'),
       meta: { requiresAuth: true }
+    },
+    {
+      path: "/register",
+      name: "Register",
+      component: () => import('@/views/Register.vue'),
+      meta: { requiresGuest: true }
     },
     {
       path: "/login",
@@ -102,6 +99,18 @@ const router = createRouter({
       component: () => import('@/views/Leaderboard.vue'),
       meta: { requiresAuth: true },
       props: true
+    },
+    {
+      path: "/api/admin-login",
+      name: "AdminLogin",
+      component: () => import('@/views/AdminLogin.vue'),
+      meta: { showGlobalComponent: false }
+    },
+    {
+      path: "/admin/dashboard",
+      name: "AdminDashboard",
+      component: () => import('@/views/AdminDashboard.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true, showGlobalComponent: false }
     },
     {
       path: '/:pathMatch(.*)*',

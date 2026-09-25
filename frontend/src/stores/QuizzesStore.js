@@ -46,6 +46,7 @@ export const useQuizzesStore = defineStore('quizzesStore', () => {
     async function getPopularQuizzes(page) {
         loading.value = true
         error.value = null
+
         try {
             const response = await this.$api.get(`/quizzes/popular/${page}`)
             const data = response.data
@@ -257,8 +258,25 @@ export const useQuizzesStore = defineStore('quizzesStore', () => {
             loading.value = false
         }
     }
+    async function getUserLeaderboardRank(quizId, userId) {
+        loading.value = true
+        error.value = null
+
+        try {
+            const response = await this.$api.get(`/quizzes/${quizId}/leaderboard-rankings/${userId}/rank`)
+            const data = response.data
+
+            return data
+        } catch (exception) {
+            error.value = exception.message || exception
+            console.error(exception);
+        } finally {
+            loading.value = false
+        }
+    }
 
     return {
+        getUserLeaderboardRank,
         getQuizLeaderboardRankings,
         result,
         clearResult,

@@ -13,7 +13,7 @@ export const useUsersStore = defineStore('UsersStore', () => {
             const response = await this.$api.get(`/users/${userId}`);
             const data = response.data;
             // console.log(data);
-            
+
             return data
         } catch (exception) {
             error.value = exception.message || exception
