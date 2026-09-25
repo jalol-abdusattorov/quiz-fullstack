@@ -435,7 +435,7 @@ def get_quiz_leaderboard_rankings(
             },
             {
                 "$project": {
-                    "_id": 0,
+                    "user_id": "$user_id",
                     "username": "$user_details.username",
                     "percentage": "$percentage",
                     "time_taken": "$time_taken"
@@ -443,7 +443,13 @@ def get_quiz_leaderboard_rankings(
             },
             {
                 "$group": {
-                    "_id": "$username",
+                    '_id': '$username',
+                    'id': {
+                        '$first': '$_id'
+                    },
+                    "user_id": {
+                        "$first": "$user_id"
+                    },
                     "percentage": {
                         "$first": "$percentage"
                     },
@@ -481,12 +487,97 @@ def get_quiz_leaderboard_rankings(
             return {'message': "this quiz haven't been tried yet"}
         elif not final_result and page != 1:
             return {'message': 'this quiz has no statistics on this page'}
-        
+
+        for i in range(len(final_result)):
+            final_result[i]['id'] = str(final_result[i]['id'])
+            final_result[i]['user_id'] = str(final_result[i]['user_id'])
+
         return {"result": final_result}
 
     except bson.errors.InvalidId:
         raise invalid_id_exception
 
+
+# AUTHORIZED
+@router.get("/quizzes/{quiz_id}/leaderboard-rankings/{user_id}/rank")
+def get_user_leaderboard_rank(
+    quiz_id: str,
+    user_id: str,
+    request: Request,
+    _: Annotated[str, Depends(swagger_bearer_scheme)]
+):
+    try:
+        quiz_id = ObjectId(quiz_id)
+        user_id = ObjectId(user_id)
+    except bson.errors.InvalidId:
+        raise invalid_id_exception
+
+    cursor = results_collection.aggregate([
+        {
+            "$match": {
+                "quiz_id": quiz_id
+            }
+        },
+        {
+            "$lookup": {
+                "from":         "users",
+                "localField":   "user_id",
+                "foreignField": "_id",
+                "as":           "user_details"
+            }
+        },
+        {
+            "$unwind": {
+                "path": "$user_details"
+            }
+        },
+        {
+            "$project": {
+                "user_id": "$user_id",
+                "username": "$user_details.username",
+                "percentage": "$percentage",
+                "time_taken": "$time_taken"
+            }
+        },
+        {
+            "$group": {
+                '_id': '$username',
+                'id': {
+                    '$first': '$_id'
+                },
+                "user_id": {
+                    "$first": "$user_id"
+                },
+                "percentage": {
+                    "$first": "$percentage"
+                },
+                "time_taken": {
+                    "$first": "$time_taken"
+                }
+            }
+        },
+        {
+            "$setWindowFields": {
+                "sortBy": { "percentage": -1 },
+                "output": {
+                    "leaderboard_rank": {
+                        "$denseRank": {}
+                    }
+                }
+            }
+        },
+        {
+            '$match': {
+                'user_id': user_id
+            }
+        }
+    ])
+
+    final_result = list(cursor)[0]
+    final_result['id'] = str(final_result['id'])
+    final_result['user_id'] = str(final_result['user_id'])
+
+    return final_result
 
 # AUTHORIZED
 @router.get("/quizzes/{quiz_id}/dashboard")
