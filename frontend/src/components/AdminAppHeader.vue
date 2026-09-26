@@ -2,8 +2,9 @@
     <div>
         <!-- ADMIN -->
         <header class="navbar" v-if="isAdmin">
-            <router-link :to="{ name: 'Home' }" class="brand">Quiz</router-link>
+            <router-link :to="{ name: 'AdminDashboard' }" class="brand">Quiz</router-link>
             <nav class="router-links">
+                <router-link class="nav-btn" :to="{ name: 'QuizManagement' }">Quiz Management</router-link>
                 <router-link class="nav-btn" :to="{ name: 'AdminDashboard' }">Dashboard</router-link>
             </nav>
         </header>

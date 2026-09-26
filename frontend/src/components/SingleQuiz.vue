@@ -8,13 +8,15 @@
           <p class="quiz-date">Created at:<br>{{ formatDate(quiz.created_at) }}</p>
           <p class="quiz-recent-attempt" v-if="quiz.completed_at">Recent attempt:<br>{{ formatDate(quiz.completed_at) }}</p>
       </div>
-      <router-link v-if="quiz?._id" :to="{ name: 'QuizDetails', params: { id: quiz._id } }" class="view-btn">View quiz</router-link>
+      <template v-if="showManageButton">
+        <router-link v-if="quiz?._id" :to="{ name: 'ManageQuiz', params: { quizId: quiz._id } }" class="manage-btn">Manage</router-link>
+      </template>
     </div>
 </template>
 
 <script>
     export default {
-        props: ['quiz'],
+        props: ['quiz', "showManageButton"],
         setup(props) {
             const formatTime = (seconds) => {
                 if (seconds == null) return '-'
@@ -142,7 +144,7 @@
   color: #444;
 }
 
-.view-btn {
+.manage-btn {
   margin-top: 1.5rem;
   width: 100%;
   padding: 0.625rem;
@@ -156,7 +158,7 @@
   transition: background-color 0.2s ease;
 }
 
-.view-btn:hover {
+.manage-btn:hover {
   background-color: #4338ca;
 }
 </style>

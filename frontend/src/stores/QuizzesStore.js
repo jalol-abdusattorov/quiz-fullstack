@@ -275,7 +275,44 @@ export const useQuizzesStore = defineStore('quizzesStore', () => {
         }
     }
 
+    async function getQuizDashboard(quizId) {
+        loading.value = true
+        error.value = null
+
+        try {
+            const response = await this.$api.get(`/quizzes/${quizId}/dashboard`)
+            const data = response.data
+            // console.log(data);
+
+            return data
+        } catch (exception) {
+            error.value = exception.message || exception
+            console.error(exception)
+        } finally {
+            loading.value = false
+        }
+    }
+
+    async function editQuiz(quizId, editingValues) {
+        loading.value = true
+        error.value = null
+
+        try {
+            const response = await this.$api.put(`/quizzes/edit-quiz/${quizId}`, editingValues)
+            const data = response.data
+            // console.log(data);
+
+            return data
+        } catch (exception) {
+            error.value = exception.message || exception
+            console.error(exception)
+        } finally {
+            loading.value = false
+        }
+    }
+
     return {
+        getQuizDashboard,
         getUserLeaderboardRank,
         getQuizLeaderboardRankings,
         result,
@@ -294,6 +331,7 @@ export const useQuizzesStore = defineStore('quizzesStore', () => {
         getUserStatistics,
         getUserRecentAttepmts,
         filterQuizzes,
-        searchQuiz
+        searchQuiz,
+        editQuiz
     }
 })

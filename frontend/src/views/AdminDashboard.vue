@@ -10,7 +10,7 @@
                 <p>Total Attempts: {{ adminDashboardData.total_attempts }}</p>
                 <hr>
                 <h1>Trending/Popular Quizzes</h1>
-                <QuizzesComponent :quizzes="popularQuizzes" :is-popular-quizzes="true" />
+                <QuizzesList :quizzes="popularQuizzes" :is-popular-quizzes="true" :showManageButton="true" />
             </div>
         </div>
     </main>
@@ -23,10 +23,10 @@ import { onMounted, ref } from 'vue';
 import { useAuthStore } from '@/stores/auth.js';
 import { useRouter } from 'vue-router';
 import { useQuizzesStore } from '@/stores/QuizzesStore.js';
-import QuizzesComponent from '@/components/QuizzesComponent.vue';
+import QuizzesList from '@/components/QuizzesList.vue';
 
     export default {
-        components: { AdminAppHeader, QuizzesComponent },
+        components: { AdminAppHeader, QuizzesList },
         setup() {
             const adminStore = useAdminStore()
             const quizzesStore = useQuizzesStore()

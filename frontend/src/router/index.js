@@ -113,6 +113,33 @@ const router = createRouter({
       meta: { requiresAuth: true, requiresAdmin: true, showGlobalComponent: false }
     },
     {
+      path: "/quiz-management",
+      name: "QuizManagement",
+      component: () => import('@/views/QuizzesManagement.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true, showGlobalComponent: false }
+    },
+    {
+      path: "/quiz-management/manage/:quizId",
+      name: "ManageQuiz",
+      component: () => import('@/views/ManageQuiz.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true, showGlobalComponent: false },
+      props: true
+    },
+    {
+      path: "/quizzes/:quizId/statistics",
+      name: "QuizStatistics",
+      component: () => import('@/views/QuizStatistics.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true, showGlobalComponent: false },
+      props: true
+    },
+    {
+      path: "/quizzes/edit-quiz/:quizId",
+      name: "EditQuiz",
+      component: () => import('@/views/EditQuiz.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true, showGlobalComponent: false },
+      props: true
+    },
+    {
       path: '/:pathMatch(.*)*',
       name: 'NotFound',
       component: () => import('@/views/NotFound.vue'),

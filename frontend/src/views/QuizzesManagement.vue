@@ -1,5 +1,6 @@
 <template>
     <div class="dashboard-layout">
+        <admin-app-header />
         <main class="container">
             <div class="search-quiz">
                 <input class="search-bar" type="text" @input="onTyping" v-model="searching" placeholder="Search quizzes...">
@@ -51,7 +52,7 @@
                 <button class="page-btn" @click="nextPage">Next</button>
             </div>
             <div v-if="quizzesStore.quizzes.length">
-                <QuizzesComponent :quizzes="quizzesStore.quizzes" />
+                <QuizzesList :quizzes="quizzesStore.quizzes" :showManageButton="true" />
             </div>
             <div v-if="quizzesStore.loading">Loading data...</div>
             <div v-if="quizzesStore.error">An error has occured</div>
@@ -61,12 +62,13 @@
 </template>
 
 <script>
-import QuizzesComponent from '@/components/QuizzesComponent.vue';
 import { useQuizzesStore } from '@/stores/QuizzesStore';
+import AdminAppHeader from '../components/AdminAppHeader.vue';
 import { onMounted, ref } from 'vue';
+import QuizzesList from '@/components/QuizzesList.vue';
 
     export default {
-        components: { QuizzesComponent },
+        components: { AdminAppHeader, QuizzesList },
         setup() {
             const quizzesStore = useQuizzesStore()
             const currentPage = ref(1)

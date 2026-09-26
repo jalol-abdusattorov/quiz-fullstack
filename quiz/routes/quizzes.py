@@ -330,6 +330,9 @@ def get_quiz_statistics(
                     },
                     "lowest_score": {
                         "$min": "$score"
+                    },
+                    "average_completion": {
+                        "$avg": "$time_taken"
                     }
                 }
             }
@@ -625,11 +628,17 @@ def get_quiz_dashboard(
                                 'average_score': {
                                     '$avg': '$score'
                                 }, 
-                                'average_percentage': {
-                                    '$avg': '$percentage'
-                                }, 
                                 'highest_score': {
                                     '$max': '$score'
+                                },
+                                'average_percentage': {
+                                    '$avg': '$percentage'
+                                },
+                                'highest_percentage': {
+                                    '$max': '$percentage'
+                                },
+                                'average_completion': {
+                                    '$avg': '$time_taken'
                                 }
                             }
                         }
@@ -672,9 +681,29 @@ def get_quiz_dashboard(
                         },
                         {
                             '$project': {
-                                '_id': { '$toString': '$_id' }, 
+                                '_id': '$_id', 
                                 'percentage': '$percentage', 
                                 'percentage_rank': '$percentage_rank'
+                            }
+                        },
+                        {
+                            '$lookup': {
+                                'from': 'users', 
+                                'localField': '_id', 
+                                'foreignField': '_id', 
+                                'as': 'user_details'
+                            }
+                        },
+                        {
+                            '$project': {
+                                '_id': {
+                                    '$toString': '$_id'
+                                }, 
+                                'percentage': 1, 
+                                'percentage_rank': 1, 
+                                'username': {
+                                    '$first': '$user_details.username'
+                                }
                             }
                         }
                     ],
@@ -777,6 +806,25 @@ def get_quiz_dashboard(
                         }
                     }
                 }
+            },
+            {
+                '$project': {
+                    'statistics': 1, 
+                    'score_distribution': 1, 
+                    'top_users': 1, 
+                    'questions': 1, 
+                    'total_questions': {
+                        '$size': '$questions'
+                    }
+                }
+            },
+            {
+                '$sort': {
+                    'total_questions': -1
+                }
+            },
+            {
+                "$limit": 1
             }
         ])
 
@@ -786,7 +834,7 @@ def get_quiz_dashboard(
             return {'message': "this quiz haven't been tried yet or invalid id"}
 
         final_result.insert(0, { "quiz": { "title": quiz["title"] } })
-
+        print(final_result[0])
         return {"results": final_result}
 
 
@@ -1146,3 +1194,41 @@ def get_quiz_questions(
         return final_result
     except:
         return invalid_id_exception
+
+
+# AUTHORIZED AND ADMIN
+@router.put("/quizzes/edit-quiz/{quiz_id}")
+def update_quiz(
+    quiz_id: str,
+    EditQuizRequest: UpdateQuizRequest,
+    request: Request,
+    _: Annotated[str, Depends(swagger_bearer_scheme)]
+):
+    try:
+        quiz_id = ObjectId(quiz_id)
+    except bson.errors.InvalidId:
+        raise invalid_id_exception
+
+    if not request.state.admin:
+        raise permission_denied_exception
+
+    updating_dict = EditQuizRequest.model_dump(exclude_unset=True)
+
+    if 'difficulty' in updating_dict:
+        if updating_dict['difficulty'] not in ['easy', 'medium', 'hard']:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Difficulty should be easy, medium or hard")
+
+    if 'question_ids' in updating_dict:
+        for i, question_id in enumerate(updating_dict['question_ids']):
+            questionExists = questions_collection.find_one({ '_id': ObjectId(question_id) })
+            if not questionExists:
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"question does not exist '{question_id}'")
+
+            updating_dict['question_ids'][i] = ObjectId(question_id)
+
+    result = quizzes_collection.update_one(
+        { '_id': quiz_id },
+        { '$set': updating_dict }
+    )
+
+    return {"message": f"modified the document"}

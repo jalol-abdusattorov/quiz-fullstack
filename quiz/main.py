@@ -23,7 +23,7 @@ public_endpoints = ["/docs", "/openapi.json", "/api/auth/login", "/users", "/"]
 openapi_tags = [
     {
         "name": "Users",
-        "description": "User operaqtions"
+        "description": "User operations"
     },
     {
         "name": "Auth",
