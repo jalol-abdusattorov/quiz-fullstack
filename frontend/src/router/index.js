@@ -104,7 +104,7 @@ const router = createRouter({
       path: "/api/admin-login",
       name: "AdminLogin",
       component: () => import('@/views/AdminLogin.vue'),
-      meta: { showGlobalComponent: false }
+      meta: { requiresGuest: true, showGlobalComponent: false }
     },
     {
       path: "/admin/dashboard",

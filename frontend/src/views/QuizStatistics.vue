@@ -1,8 +1,8 @@
 <template>
-    <div v-if="quizDashboard" class="dashboard">
+    <div class="dashboard">
         <admin-app-header />
-
-        <main class="dashboard-content">
+        <p v-if="!quizDashboard">No statistics</p>
+        <main class="dashboard-content" v-if="quizDashboard">
 
             <!-- Statistics -->
             <section class="section">
@@ -33,9 +33,7 @@
                     <div class="stat-card">
                         <span class="stat-label">Average Completion</span>
                         <span class="stat-value">
-                            {{ formatTime(Math.round(quizDashboard[1].statistics.average_completion * 100) / 100) }}
-                            /
-                            mm:ss
+                            {{ formatTime(quizDashboard[1].statistics.average_completion) }}
                         </span>
                     </div>
                 </div>
@@ -51,7 +49,10 @@
                         <span>0–20%</span>
                         <div class="bar">
                             <div class="bar-fill"
-                                :style="{ width: (quizDashboard[1].score_distribution['0-20'] || 0) + '%' }">
+                                :style="{
+                                    width: ((quizDashboard[1].score_distribution['0-20'] || 0) /
+                                        quizDashboard[1].statistics.attempts * 100) + '%'
+                                }">
                             </div>
                         </div>
                         <strong>{{ quizDashboard[1].score_distribution["0-20"] || 0 }}</strong>
@@ -61,7 +62,10 @@
                         <span>21–40%</span>
                         <div class="bar">
                             <div class="bar-fill"
-                                :style="{ width: (quizDashboard[1].score_distribution['21-40'] || 0) + '%' }">
+                                :style="{
+                                    width: ((quizDashboard[1].score_distribution['21-40'] || 0) /
+                                        quizDashboard[1].statistics.attempts * 100) + '%'
+                                }">
                             </div>
                         </div>
                         <strong>{{ quizDashboard[1].score_distribution["21-40"] || 0 }}</strong>
@@ -71,7 +75,10 @@
                         <span>41–60%</span>
                         <div class="bar">
                             <div class="bar-fill"
-                                :style="{ width: (quizDashboard[1].score_distribution['41-60'] || 0) + '%' }">
+                                :style="{
+                                    width: ((quizDashboard[1].score_distribution['41-60'] || 0) /
+                                        quizDashboard[1].statistics.attempts * 100) + '%'
+                                }">
                             </div>
                         </div>
                         <strong>{{ quizDashboard[1].score_distribution["41-60"] || 0 }}</strong>
@@ -81,7 +88,10 @@
                         <span>61–80%</span>
                         <div class="bar">
                             <div class="bar-fill"
-                                :style="{ width: (quizDashboard[1].score_distribution['61-80'] || 0) + '%' }">
+                                :style="{
+                                    width: ((quizDashboard[1].score_distribution['61-80'] || 0) /
+                                        quizDashboard[1].statistics.attempts * 100) + '%'
+                                }">
                             </div>
                         </div>
                         <strong>{{ quizDashboard[1].score_distribution["61-80"] || 0 }}</strong>
@@ -91,7 +101,10 @@
                         <span>81–100%</span>
                         <div class="bar">
                             <div class="bar-fill"
-                                :style="{ width: (quizDashboard[1].score_distribution['81-100'] || 0) + '%' }">
+                                :style="{
+                                    width: ((quizDashboard[1].score_distribution['81-100'] || 0) /
+                                        quizDashboard[1].statistics.attempts * 100) + '%'
+                                }">
                             </div>
                         </div>
                         <strong>{{ quizDashboard[1].score_distribution["81-100"] || 0 }}</strong>
@@ -159,8 +172,12 @@ import AdminAppHeader from '../components/AdminAppHeader.vue';
 
             async function loadQuizDashboard() {
                 quizDashboard.value = await quizzesStore.getQuizDashboard(props.quizId)
-                quizDashboard.value = quizDashboard.value.results
-            }   
+                if (quizDashboard.value?.message == "this quiz haven't been tried yet") {
+                    quizDashboard.value = null
+                } else {
+                    quizDashboard.value = quizDashboard.value.results
+                }
+            }
 
             function formatTime(seconds) {
                 const hours = Math.floor(seconds / 3600);
@@ -180,7 +197,8 @@ import AdminAppHeader from '../components/AdminAppHeader.vue';
 
             return {
                 formatTime,
-                quizDashboard
+                quizDashboard,
+                quizzesStore
             }
         }
     }
@@ -196,29 +214,34 @@ import AdminAppHeader from '../components/AdminAppHeader.vue';
 .dashboard-content {
     max-width: 1000px;
     margin: 0 auto;
-    padding: 40px 24px;
+    padding: 36px 24px 60px;
 }
 
 .section {
-    margin-bottom: 40px;
+    margin-bottom: 42px;
 }
 
 .section h1,
 .section h2 {
-    margin: 0 0 20px;
+    margin: 0 0 18px;
     color: #0f172a;
 }
 
 .section h1 {
     font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
 }
 
 .section h2 {
-    font-size: 20px;
+    font-size: 18px;
+    font-weight: 700;
 }
 
 
-/* Statistics */
+/* =========================
+   Statistics
+========================= */
 
 .stats-grid {
     display: grid;
@@ -227,42 +250,71 @@ import AdminAppHeader from '../components/AdminAppHeader.vue';
 }
 
 .stat-card {
-    padding: 20px;
-    background: white;
+    min-height: 92px;
+    padding: 18px 20px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    background: #ffffff;
     border: 1px solid #e2e8f0;
     border-radius: 12px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.04);
+
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
+
+    transition:
+        transform 0.15s ease,
+        box-shadow 0.15s ease,
+        border-color 0.15s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    border-color: #dbe3ee;
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.07);
 }
 
 .stat-label {
     display: block;
-    margin-bottom: 10px;
-    font-size: 14px;
+    margin-bottom: 8px;
+
+    font-size: 13px;
+    font-weight: 500;
     color: #64748b;
 }
 
 .stat-value {
-    font-size: 24px;
+    display: block;
+
+    font-size: 23px;
+    line-height: 1.2;
     font-weight: 700;
     color: #0f172a;
 }
 
 
-/* Score Distribution */
+/* =========================
+   Score Distribution
+========================= */
 
 .distribution {
-    padding: 20px;
-    background: white;
+    padding: 22px;
+
+    background: #ffffff;
     border: 1px solid #e2e8f0;
     border-radius: 12px;
+
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.03);
 }
 
 .score-row {
     display: grid;
-    grid-template-columns: 70px 1fr 40px;
-    gap: 12px;
+    grid-template-columns: 72px minmax(0, 1fr) 32px;
+    gap: 14px;
     align-items: center;
-    margin-bottom: 16px;
+
+    margin-bottom: 17px;
 }
 
 .score-row:last-child {
@@ -270,60 +322,89 @@ import AdminAppHeader from '../components/AdminAppHeader.vue';
 }
 
 .score-row > span {
-    font-size: 14px;
+    font-size: 13px;
+    font-weight: 500;
     color: #475569;
 }
 
 .score-row strong {
     text-align: right;
+
+    font-size: 13px;
+    font-weight: 700;
     color: #334155;
 }
 
 .bar {
-    height: 10px;
+    height: 9px;
+
     overflow: hidden;
-    background: #e2e8f0;
+
+    background: #e8eef5;
     border-radius: 999px;
 }
 
 .bar-fill {
     height: 100%;
+
+    min-width: 4px;
+
     background: #2563eb;
     border-radius: inherit;
-    transition: width 0.3s ease;
+
+    transition: width 0.4s ease;
 }
 
 
-/* Leaderboard */
+/* =========================
+   Leaderboard
+========================= */
 
 .leaderboard {
     overflow: hidden;
-    background: white;
+
+    background: #ffffff;
     border: 1px solid #e2e8f0;
     border-radius: 12px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.04);
+
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
 }
 
 .leaderboard-header,
 .leaderboard-row {
     display: grid;
-    grid-template-columns: 80px 1fr 40px;
+    grid-template-columns: 70px minmax(0, 1fr) 80px;
+
     align-items: center;
+
     padding: 14px 20px;
 }
 
 .leaderboard-header {
+    min-height: 42px;
+
     background: #f8fafc;
     border-bottom: 1px solid #e2e8f0;
 
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
     color: #64748b;
 }
 
+.leaderboard-header span:last-child {
+    text-align: right;
+}
+
 .leaderboard-row {
-    min-height: 60px;
+    min-height: 66px;
+
     border-bottom: 1px solid #f1f5f9;
+
+    transition: background 0.15s ease;
+}
+
+.leaderboard-row:hover {
+    background: #fafcff;
 }
 
 .leaderboard-row:last-child {
@@ -331,75 +412,179 @@ import AdminAppHeader from '../components/AdminAppHeader.vue';
 }
 
 .username {
+    min-width: 0;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    font-size: 14px;
     font-weight: 600;
     color: #1e293b;
 }
 
 .percentage {
     text-align: right;
+
+    font-size: 14px;
     font-weight: 700;
     color: #2563eb;
 }
 
 
-/* Rank */
+/* =========================
+   Rank
+========================= */
 
 .rank {
-    width: 34px;
-    height: 34px;
-
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
 
+    width: 34px;
+    height: 34px;
+
     border-radius: 50%;
-    font-weight: 800;
+
+    font-size: 13px;
+    font-weight: 700;
+
+    transition:
+        transform 0.15s ease,
+        box-shadow 0.15s ease;
 }
+
+.rank:hover {
+    transform: translateY(-1px) scale(1.04);
+}
+
+
+/* 1st */
 
 .gold {
-    background: #fef3c7;
-    color: #d97706;
-    border: 2px solid #f59e0b;
+    background: linear-gradient(135deg, #fff7d6, #fde68a);
+    color: #a16207;
+
+    border: 1px solid #f59e0b;
+
+    box-shadow: 0 2px 7px rgba(245, 158, 11, 0.25);
 }
+
+
+/* 2nd */
 
 .silver {
-    background: #f1f5f9;
-    color: #64748b;
-    border: 2px solid #94a3b8;
+    background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+    color: #475569;
+
+    border: 1px solid #94a3b8;
+
+    box-shadow: 0 2px 7px rgba(100, 116, 139, 0.18);
 }
+
+
+/* 3rd */
 
 .bronze {
-    background: #ffedd5;
-    color: #c2410c;
-    border: 2px solid #ea580c;
+    background: linear-gradient(135deg, #fff1e6, #fed7aa);
+    color: #9a3412;
+
+    border: 1px solid #ea580c;
+
+    box-shadow: 0 2px 7px rgba(234, 88, 12, 0.2);
 }
+
+
+/* Other positions */
 
 .normal {
+    background: #f8fafc;
     color: #64748b;
+
+    border: 1px solid #cbd5e1;
 }
 
 
-/* Mobile */
+/* =========================
+   Mobile
+========================= */
 
-@media (max-width: 700px) {
+@media (max-width: 800px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 600px) {
     .dashboard-content {
-        padding: 24px 16px;
+        padding: 28px 16px 48px;
+    }
+
+    .section {
+        margin-bottom: 34px;
+    }
+
+    .section h1 {
+        font-size: 22px;
+    }
+
+    .section h2 {
+        font-size: 17px;
     }
 
     .stats-grid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+
+    .stat-card {
+        min-height: 86px;
+        padding: 15px;
+    }
+
+    .stat-value {
+        font-size: 20px;
+    }
+
+    .distribution {
+        padding: 18px 16px;
+    }
+
+    .score-row {
+        grid-template-columns: 65px minmax(0, 1fr) 25px;
+        gap: 10px;
     }
 
     .leaderboard-header,
     .leaderboard-row {
-        grid-template-columns: 55px 1fr 70px;
-        padding: 12px 14px;
+        grid-template-columns: 52px minmax(0, 1fr) 65px;
+        padding-left: 14px;
+        padding-right: 14px;
     }
 }
 
-@media (max-width: 450px) {
+@media (max-width: 420px) {
     .stats-grid {
         grid-template-columns: 1fr;
+    }
+
+    .stat-card {
+        min-height: 78px;
+    }
+
+    .score-row {
+        grid-template-columns: 62px minmax(0, 1fr) 24px;
+        gap: 8px;
+    }
+
+    .score-row > span,
+    .score-row strong {
+        font-size: 12px;
+    }
+
+    .leaderboard-header,
+    .leaderboard-row {
+        grid-template-columns: 48px minmax(0, 1fr) 60px;
     }
 }
 </style>

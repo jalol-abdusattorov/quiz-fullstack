@@ -15,6 +15,7 @@
                     <label>Category: </label>
                     <select class="select-box" v-model="category" @change="getFilteredQuizzes">
                         <option value="all" selected>All</option>
+                        <option value="Technology">Technology</option>
                         <option value="Programming">Programming</option>
                         <option value="Mathematics">Mathematics</option>
                         <option value="Science">Science</option>
@@ -172,6 +173,7 @@ import { onMounted, ref } from 'vue';
   justify-content: right;
   align-items: center;
   gap: 0.75rem;
+  margin: 10px;
 }
 .page-indicator {
   font-size: 0.875rem;

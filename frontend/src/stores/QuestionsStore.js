@@ -22,10 +22,27 @@ export const useQuestionsStore = defineStore('questionsStore', () => {
             loading.value = false
         }
     }
+    async function validQuestionId(questionId) {
+        loading.value = true
+        error.value = null
+
+        try {
+            const response = await this.$api.get(`/question/is-valid/${questionId}`)
+            const data = response.data
+            // console.log(data);
+
+            return data
+        } catch (exception) {
+            error.value = exception.message || exception
+        } finally {
+            loading.value = false
+        }
+    }
 
     return {
         loading,
         error,
-        getQuestionDetails
+        getQuestionDetails,
+        validQuestionId
     }
 })

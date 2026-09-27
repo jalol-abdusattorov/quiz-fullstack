@@ -35,15 +35,18 @@
                 </div>
             </div>
         </div>
-    </div>
-    <hr>
-
-    <div class="recent-attempts" v-if="userRecentAttempts">
-      <h1>Recent attempts</h1>
-      <div class="quizzes">
-        <QuizzesComponent :quizzes="userRecentAttempts" />
       </div>
-    </div>
+      <hr>
+
+      <div class="recent-attempts" v-if="userRecentAttempts">
+        <h1>Recent attempts</h1>
+        <div class="quizzes">
+          <QuizzesComponent :quizzes="userRecentAttempts" />
+        </div>
+      </div>
+      <div v-else class="no-recent-attempts">
+        <h1>You have no recent attempts</h1>
+      </div>
     </template>
   </main>
 </template>
@@ -128,6 +131,11 @@ hr {
   font-family: 'Poppins', 'Inter', sans-serif;
   margin-left: 43%;
 }
+.no-recent-attempts {
+  display: flex;
+  justify-content: center;
+}
+
 
 /* Main Outer Container */
 .stats-container {

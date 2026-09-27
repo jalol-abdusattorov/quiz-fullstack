@@ -21,6 +21,7 @@
               <label for="category-choice">Category: </label>
               <select class="select-box" v-model="category" @change="handleSelect">
                 <option value="" disabled selected>Select an option...</option>
+                <option value="Technology">Technology</option>
                 <option value="Programming">Programming</option>
                 <option value="Mathematics">Mathematics</option>
                 <option value="Science">Science</option>

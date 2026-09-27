@@ -54,7 +54,7 @@ def get_quizzes(
     if page <= 0: raise page_exception
 
     skipping_pages = (page - 1) * 10
-    limit = 10
+    limit = 12
 
     page_quizzes = quizzes_collection.find({}).skip(skipping_pages).limit(limit)
 
@@ -225,7 +225,7 @@ def get_quiz_leaderboard(
             raise page_exception
 
         skipping_value = (page - 1) * 10
-        limit = 10
+        limit = 12
 
         result = results_collection.aggregate([
             {
@@ -415,7 +415,7 @@ def get_quiz_leaderboard_rankings(
             raise page_exception
 
         skipping_value = (page - 1) * 10
-        limit = 10
+        limit = 12
 
         result = results_collection.aggregate([
             {
@@ -831,7 +831,7 @@ def get_quiz_dashboard(
         final_result = list(result)
 
         if not final_result:
-            return {'message': "this quiz haven't been tried yet or invalid id"}
+            return {'message': "this quiz haven't been tried yet"}
 
         final_result.insert(0, { "quiz": { "title": quiz["title"] } })
         print(final_result[0])
@@ -860,7 +860,7 @@ def get_quiz_hardest_questions(
             raise page_exception
 
         skipping_value = (page - 1) * 10
-        limit = 10
+        limit = 12
 
         result = results_collection.aggregate([
             {
@@ -944,7 +944,7 @@ def get_popular_quizzes(
         raise page_exception
 
     skipping_value = (page - 1) * 10
-    limit = 10
+    limit = 12
 
     time_threshold = dt.now(timezone.utc) - timedelta(days=7)
     result = results_collection.aggregate([
@@ -1009,7 +1009,7 @@ def get_quizzes_by_category(
         return page_exception
 
     skipping_value = (page - 1) * 10
-    limit = 10
+    limit = 12
 
     cursor = quizzes_collection.aggregate([
         {
@@ -1059,7 +1059,7 @@ def get_quizzes(
     sort = { sorting_by: sorting_order }
 
     skipping_val = (page - 1) * 10
-    limit = 10
+    limit = 12
 
     cursor = quizzes_collection.aggregate([
         {
@@ -1105,7 +1105,7 @@ def search_quizzes_by(
     safe_target = re.escape(search)
 
     skipping_val = (page - 1) * 10
-    limit = 10
+    limit = 12
 
     search = search.strip()
     if len(search) == 0:

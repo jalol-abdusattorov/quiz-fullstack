@@ -137,3 +137,27 @@ def get_question_statistics(
 
     except bson.errors.InvalidId:
         raise invalid_id_exception
+
+
+# AUTHORIZED
+@router.get("/question/is-valid/{question_id}")
+def is_valid_question(
+    question_id: str,
+    request: Request,
+    _: Annotated[str, Depends(swagger_bearer_scheme)]
+):
+    if not question_id.strip():
+        return {'message': "question does not exist"}
+
+    try:
+        question_id = ObjectId(question_id)
+    except bson.errors.InvalidId:
+        return {'message': "question does not exist"}
+
+    question = questions_collection.find_one({ '_id': question_id })
+    if not question:
+        return {'message': "question does not exist"}
+
+    question['_id'] = str(question['_id'])
+
+    return {'question': question}
