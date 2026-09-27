@@ -4,7 +4,7 @@
       <h1 class="title">Leaderboard page</h1>
  
       <!-- "My rank" banner: shown once we know where the current user stands -->
-      <div class="my-rank" v-if="myEntry">
+      <div class="my-rank" v-if="myEntry != null">
         <div class="my-rank-info">
           <span class="rank-badge me">{{ myEntry.leaderboard_rank }}</span>
           <div>
@@ -24,6 +24,27 @@
         <button class="btn" :disabled="searching" @click="findMyRank">
           {{ searching ? 'Searching…' : 'Find my rank' }}
         </button>
+      </div>
+      <!-- <p v-if="!isUserOnLeaderboard">You are not on the leaderboard</p> -->
+       <div v-if="!isUserOnLeaderboard" class="not-on-leaderboard">
+          <div class="not-leaderboard-icon">
+              🏆
+          </div>
+
+          <h2>You’re Not on the Leaderboard</h2>
+
+          <p>
+              You haven't completed this quiz yet, or your result doesn't qualify
+              for the leaderboard.
+          </p>
+
+          <router-link
+              class="take-quiz-btn"
+              :to="{ name: 'QuizDetails', params: { id: quizId } }"
+          >
+              Take the Quiz
+              <span>→</span>
+          </router-link>
       </div>
  
       <p class="state" v-if="!leaderboard">This quiz has no results yet.</p>
@@ -70,7 +91,7 @@ import { computed, onMounted, ref } from 'vue';
             const myPage = ref(null)
             const searching = ref(null)
             const atEnd = ref(false)
-
+            const isUserOnLeaderboard = ref(true)
 
             const isOnCurrentPage = computed(() => {
                 if (!leaderboard.value) return
@@ -112,17 +133,6 @@ import { computed, onMounted, ref } from 'vue';
                     leaderboard.value = null
                 } else {
                     leaderboard.value = leaderboard.value.result
-
-                    // for (const idx in leaderboard.value) {
-                    //     if (leaderboard.value[idx].user_id == userId) {
-                    //         myEntry.value = leaderboard.value[idx]
-
-                    //         myPage.value = Math.ceil(idx / 10)
-                    //         console.log(myPage.value);
-
-                    //         return
-                    //     }
-                    // }
                 }
             }
             async function getCorrectUsername() {
@@ -137,15 +147,21 @@ import { computed, onMounted, ref } from 'vue';
 
                 try {
                     myEntry.value = await quizzesStore.getUserLeaderboardRank(props.quizId, userId)
-                    myPage.value = Math.ceil(myEntry.value.leaderboard_rank / 10)
+                    if (myEntry.value?.message == 'user has no leaderboard rank in this quiz') {
+                      myEntry.value = null
+                      isUserOnLeaderboard.value = false
+                    } else {
+                      myPage.value = Math.ceil(myEntry.value.leaderboard_rank / 10)
+
+                    }
                 } finally {
                     searching.value = false
                 }
             }
 
-            onMounted(() => {
-                loadLeaderboard()
-                getCorrectUsername()
+            onMounted(async () => {
+                await loadLeaderboard()
+                await getCorrectUsername()
             })
 
             return {
@@ -161,7 +177,8 @@ import { computed, onMounted, ref } from 'vue';
                 leaderboard,
                 currentPage,
                 nextPage,
-                prevPage
+                prevPage,
+                isUserOnLeaderboard
             }
         }
     }
@@ -285,6 +302,102 @@ import { computed, onMounted, ref } from 'vue';
   padding: 24px 0;
 }
  
+/* =========================================================
+   Not On Leaderboard
+========================================================= */
+
+.not-on-leaderboard {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+
+    margin: 24px 0;
+    padding: 44px 30px;
+
+    background: #f8fafc;
+    border: 1px dashed #cbd5e1;
+    border-radius: 14px;
+}
+
+.not-leaderboard-icon {
+    width: 64px;
+    height: 64px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin-bottom: 18px;
+
+    background: #ebf4ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 16px;
+
+    font-size: 28px;
+}
+
+.not-on-leaderboard h2 {
+    margin: 0 0 8px;
+
+    font-family: 'Poppins', 'Inter', sans-serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+
+    color: #1a202c;
+}
+
+.not-on-leaderboard p {
+    max-width: 440px;
+
+    margin: 0 0 22px;
+
+    font-size: 0.875rem;
+    line-height: 1.6;
+
+    color: #64748b;
+}
+
+.take-quiz-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+
+    padding: 10px 17px;
+
+    background: #2b6cb0;
+    border: 1px solid #2b6cb0;
+    border-radius: 8px;
+
+    color: #ffffff;
+
+    font-family: 'Inter', sans-serif;
+    font-size: 0.875rem;
+    font-weight: 600;
+
+    text-decoration: none;
+
+    transition:
+        background 0.18s ease,
+        transform 0.18s ease,
+        box-shadow 0.18s ease;
+}
+
+.take-quiz-btn span {
+    transition: transform 0.18s ease;
+}
+
+.take-quiz-btn:hover {
+    background: #1a365d;
+    border-color: #1a365d;
+    transform: translateY(-1px);
+    box-shadow: 0 5px 12px rgba(43, 108, 176, 0.2);
+}
+
+.take-quiz-btn:hover span {
+    transform: translateX(3px);
+}
+
 @media (max-width: 640px) {
   .leaderboard { padding: 20px 12px; }
 }

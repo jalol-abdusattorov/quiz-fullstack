@@ -1,22 +1,3 @@
-<!-- <template>
-    <div class="container" v-if="quiz">
-        <h1>Reviews page - {{ quiz.title }}</h1>
-        <div>
-            <QuestionAnswer :question-and-answer="quizStore.result.answers[currentQuestionAndAnswerNav - 1]"/>
-        </div>
-        <div class="actions">
-            <p class="page-indicator">Answer {{ currentQuestionAndAnswerNav }}</p>
-            <button class="page-btn" @click="nextQAndA" :disabled="currentQuestionAndAnswerNav >= quizStore.result.answers.length">Next</button>
-            <button class="page-btn" @click="prevQAndA" :disabled="currentQuestionAndAnswerNav <= 1">Previous</button>
-        </div>
-        <div class="question-nav">
-            <div v-for="(answer, index) in quizStore.result.answers" :key="answer.question_id">
-                <button @click="handleNav(index)" class="nav-btn">{{ index + 1 }}</button>
-            </div>
-        </div>
-    </div>
-</template> -->
-
 <template>
   <div class="review-page-container" v-if="quiz">
     <h1 class="page-title">Reviews Page - {{ quiz.title }}</h1>

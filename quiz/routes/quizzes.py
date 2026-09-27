@@ -108,18 +108,17 @@ def delete_quiz(
 
     try:
         quiz_id = ObjectId(quiz_id)
-        result = quizzes_collection.delete_one({ "_id": quiz_id })
-
-        if result.deleted_count == 0:
-            raise quiz_not_found_exception
-
-        return {
-            "message": "deleted succesfuly",
-            "quiz_id": str(quiz_id)
-        }
-
     except bson.errors.InvalidId:
         raise invalid_id_exception
+
+    result = quizzes_collection.delete_one({ "_id": quiz_id })
+    if result.deleted_count == 0:
+        raise quiz_not_found_exception
+
+    return {
+        "message": "deleted succesfuly",
+        "quiz_id": str(quiz_id)
+    }
 
 
 # AUTHORIZED
@@ -576,7 +575,11 @@ def get_user_leaderboard_rank(
         }
     ])
 
-    final_result = list(cursor)[0]
+    final_result = list(cursor)
+    if not final_result:
+        return {'message': 'user has no leaderboard rank in this quiz'}
+
+    final_result = final_result[0]
     final_result['id'] = str(final_result['id'])
     final_result['user_id'] = str(final_result['user_id'])
 

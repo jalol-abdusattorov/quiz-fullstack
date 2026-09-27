@@ -131,6 +131,7 @@ import { useRouter } from 'vue-router';
                         selected_answer: answer
                     })
                 }
+                // console.log(userAnswers.value);
             }
             async function nextQuestion() {
                 if (currentQuestionNav.value + 1 >= questions.length) return
@@ -175,6 +176,11 @@ import { useRouter } from 'vue-router';
                 quiz.value = await quizzesStore.getQuiz(props.id)
                 quizQuestions()
                 startTimer()
+
+                for (const questionId of quiz.value.question_ids) {
+                    userAnswers.value.push({ 'question_id': questionId, 'selected_answer': null })
+                }
+                // console.log(userAnswers.value);
             })
             onUnmounted(() => {
                 stopTimer()

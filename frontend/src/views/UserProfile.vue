@@ -4,11 +4,7 @@
       <div class="statistics">
         <h1 v-if="user">{{ user.username }} </h1>
 
-        <div class="empty-user-stats" v-if="!userStats">
-            <h1>You currently have no statistics</h1>
-            <h2>Play more quizzes to get more statistics</h2>
-            <router-link class="router-link-to-quizzes" :to="{ name: 'Quizzes' }">Quizzes</router-link>
-        </div>
+        <EmptyStats v-if="!userStats" />
 
         <template v-if="userStats">
             <div class="stats-container">
@@ -85,9 +81,10 @@ import { useQuizzesStore } from '@/stores/QuizzesStore';
 import { useUsersStore } from '@/stores/Users';
 import { onMounted, ref } from 'vue';
 import PerformanceOverTime from '@/components/PerformanceOverTime.vue';
+import EmptyStats from '@/components/EmptyStats.vue';
 
     export default {
-        components: { QuizzesComponent, PerformanceOverTime },
+        components: { QuizzesComponent, PerformanceOverTime, EmptyStats },
         setup() {
             const authStore = useAuthStore()
             const quizzesStore = useQuizzesStore()
@@ -140,19 +137,6 @@ import PerformanceOverTime from '@/components/PerformanceOverTime.vue';
   margin: 0 auto;
 }
 
-.empty-user-stats {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-.router-link-to-quizzes {
-  text-decoration: underline 2px transparent;
-  text-underline-offset: 4px;
-  transition: text-decoration 0.3s ease;
-}
-.router-link-to-quizzes:hover {
-  text-decoration-color: #000;
-}
 
 hr {
   color: #e7e4e4;

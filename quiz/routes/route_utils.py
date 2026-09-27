@@ -98,7 +98,7 @@ def validate_user_inputs_and_calculate_result(request, quiz, user_email) -> tupl
                 status_code=400, detail=f"invalid id '{answer['question_id']}'"
             )
  
-        if answer["selected_answer"] not in available_answers:
+        if answer["selected_answer"] not in available_answers and answer['selected_answer'] != None:
             raise HTTPException(
                 status_code=403, detail="only available answers 0, 1, 2 and 3"
             )

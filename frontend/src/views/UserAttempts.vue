@@ -1,13 +1,5 @@
 <template>
     <main class="container" >
-        <template v-if="!userAttempts">
-            <div class="empty-user-stats">
-                <h1>You currently have no statistics</h1>
-                <h2>Play more quizzes to get more statistics</h2>
-                <router-link class="router-link-to-quizzes" :to="{ name: 'Quizzes' }">Quizzes</router-link>
-            </div>
-        </template>
-
         <template v-if="userAttempts">
             <div class="page-header">
                 <div>
@@ -55,19 +47,20 @@
                 </div>
             </section>
 
-            <div class="pagination">
-                <span class="count">Showing {{ userAttempts.length }} of {{ totalAttempts }}</span>
-                <div class="pager">
-                    <span class="page">Page 1</span>
-                    <button @click="prevPage" :disabled="currentPage <= 1">Previous</button>
-                    <button @click="nextPage" :disabled="currentPage > totalAttempts / 10">Next</button>
-                </div>
-            </div>
         </template>
+        <div class="pagination">
+            <span class="count">Showing {{ userAttempts?.length || 0 }} of {{ totalAttempts }}</span>
+            <div class="pager">
+                <span class="page">Page 1</span>
+                <button @click="prevPage" :disabled="currentPage <= 1">Previous</button>
+                <button @click="nextPage" :disabled="currentPage > totalAttempts / 10">Next</button>
+            </div>
+        </div>
     </main>
 </template>
 
 <script>
+import EmptyStats from '@/components/EmptyStats.vue';
 import { useAuthStore } from '@/stores/auth';
 import { useQuizzesStore } from '@/stores/QuizzesStore';
 import { useResultsStore } from '@/stores/Results';
@@ -76,6 +69,7 @@ import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
     export default {
+        components: { EmptyStats },
         setup() {
             const authStore = useAuthStore()
             const usersStore = useUsersStore()
@@ -247,12 +241,6 @@ import { useRouter } from 'vue-router';
     border-radius: 8px;
     background: var(--card);
     color: var(--text);
-}
-
-.empty-user-stats {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
 }
 
 /* Table */

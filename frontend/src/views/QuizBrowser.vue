@@ -46,17 +46,21 @@
                     </select>
                 </div>
             </div>
+
             <div class="pagination-controls">
                 <span class="page-indicator">Page {{ currentPage }}</span>
                 <button class="page-btn" :disabled="currentPage <= 1" @click="prevPage">Previous</button>
                 <button class="page-btn" @click="nextPage">Next</button>
             </div>
+
             <div v-if="quizzesStore.quizzes.length">
                 <QuizzesComponent :quizzes="quizzesStore.quizzes" />
             </div>
+
             <div v-if="quizzesStore.loading">Loading data...</div>
             <div v-if="quizzesStore.error">An error has occured</div>
-            <p v-if="!quizzesStore.quizzes?.length">This page is empty</p>
+            <p v-if="isSearchingQuizzes && !quizzesStore.quizzes?.length">No quizzes matched your search</p>
+            <p v-if="!isSearchingQuizzes && !quizzesStore.quizzes?.length">This page is empty</p>
         </main>
     </div>
 </template>
@@ -127,7 +131,11 @@ import { onMounted, ref } from 'vue';
                     searching.value,
                     currentPage.value
                 )
-                isSearchingQuizzes.value = true
+                if(searching.value.trim().length == 0) {
+                    isSearchingQuizzes.value = false
+                } else {
+                    isSearchingQuizzes.value = true
+                }
             }
 
             onMounted(() => {

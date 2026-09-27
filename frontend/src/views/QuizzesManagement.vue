@@ -174,6 +174,7 @@ import QuizzesList from '@/components/QuizzesList.vue';
   justify-content: right;
   align-items: center;
   gap: 0.75rem;
+  margin-bottom: 10px;
 }
 .page-indicator {
   font-size: 0.875rem;

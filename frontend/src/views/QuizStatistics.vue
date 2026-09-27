@@ -1,9 +1,19 @@
 <template>
     <div class="dashboard">
         <admin-app-header />
-        <p v-if="!quizDashboard">No statistics</p>
-        <main class="dashboard-content" v-if="quizDashboard">
 
+        <p v-if="!quizDashboard" class="empty-dashboard">
+            <span class="empty-icon">📊</span>
+
+            <span class="empty-title">No Statistics Yet</span>
+
+            <span class="empty-text">
+                This quiz hasn't been attempted yet.
+                Statistics will appear here once someone completes the quiz.
+            </span>
+        </p>
+
+        <main class="dashboard-content" v-if="quizDashboard">
             <!-- Statistics -->
             <section class="section">
                 <h1>Quiz Statistics</h1>
@@ -242,6 +252,54 @@ import AdminAppHeader from '../components/AdminAppHeader.vue';
 /* =========================
    Statistics
 ========================= */
+
+.empty-dashboard {
+    width: min(600px, calc(100% - 40px));
+    margin: 80px auto;
+    padding: 40px 32px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05);
+}
+
+.empty-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 64px;
+    height: 64px;
+    margin-bottom: 18px;
+
+    border-radius: 16px;
+    background: #eff6ff;
+
+    font-size: 28px;
+}
+
+.empty-title {
+    margin-bottom: 8px;
+
+    font-size: 20px;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.empty-text {
+    max-width: 440px;
+
+    font-size: 14px;
+    line-height: 1.6;
+    color: #64748b;
+}
 
 .stats-grid {
     display: grid;
