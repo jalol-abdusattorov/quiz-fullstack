@@ -1,4 +1,3 @@
-```vue
 <template>
     <main class="dashboard">
 
@@ -32,7 +31,6 @@
                             <span class="stat-number">
                                 {{ Math.round(userStats.average_score * 100) / 100 }}
                             </span>
-                            <span class="stat-suffix">%</span>
                         </div>
                     </div>
 
@@ -61,7 +59,6 @@
                             <span class="stat-number">
                                 {{ userStats.best_score }}
                             </span>
-                            <span class="stat-suffix">%</span>
                         </div>
                     </div>
 
@@ -149,7 +146,7 @@ import EmptyStats from '@/components/EmptyStats.vue';
                 if (userStats.value?.message === "this user has no statistics") {
                     userStats.value = null
                 } else {
-                    userStats.value = userStats.value.result[0]
+                    userStats.value = userStats.value?.result[0]
                 }
             }
 
@@ -158,16 +155,17 @@ import EmptyStats from '@/components/EmptyStats.vue';
                 if (userRecentAttempts.value?.message === "this user has no recent attemtps") {
                   userRecentAttempts.value = null
                 } else {
-                  userRecentAttempts.value = userRecentAttempts.value.result
+                  userRecentAttempts.value = userRecentAttempts.value?.result
                 }
             }
 
-            onMounted(() => {
+            onMounted(async () => {
               if (!authStore.isAuthenticated) {
                 router.push({ name: "Login" })
               }
-              userStatistics()
-              userRecentAttemptsFunc()
+
+              await userStatistics()
+              await userRecentAttemptsFunc()
             })
 
             return { authStore, userStats, userRecentAttempts }

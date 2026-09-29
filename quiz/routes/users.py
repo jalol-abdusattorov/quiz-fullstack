@@ -8,7 +8,7 @@ from datetime import timedelta
 from models import UserRequest
 from mongodb import *
 from auth.utils.auth_utils import get_password_hash
-from routes.route_utils import swagger_bearer_scheme, check_valid_user_inputs
+from routes.route_utils import swagger_bearer_scheme, check_valid_user_inputs, check_owner_or_admin, check_password
 from auth.services.auth_service import create_acces_token
 
 router = APIRouter()
@@ -20,43 +20,33 @@ user_doesnt_exist_exception = HTTPException(status_code=status.HTTP_404_NOT_FOUN
 # NO AUTH
 @router.post("/users")
 def create_user(user: UserRequest):
+    if len(user.password) > 72: raise HTTPException(status_code=403, detail="password length should be less than 72 characters")
+    check_password(user.password)
+
     unique_email = users_collection.find_one({ "email": user.email })
     if unique_email:
         raise HTTPException(status_code=status.HTTP_226_IM_USED, detail="email is not unique")
 
     check_valid_user_inputs(user)
 
-    if "admin" not in [i['role'] for i in users_collection.find({})]:
-        new_user = {
-            "username": user.username,
-            "email": user.email,
-            "password_hash": get_password_hash(user.password),
-            "created_at": dt.now(),
-            "role": "admin"
-        }
-        
-        access_token_expires = timedelta(minutes=1440)
-        access_token = create_acces_token(
-            data={'sub': user.email, 'admin': True},
-            expires_delta=access_token_expires
-        )
-    else:
-        new_user = {
-            "username": user.username,
-            "email": user.email,
-            "password_hash": get_password_hash(user.password),
-            "created_at": dt.now(),
-            "role": "user"
-        }
-        
-        access_token_expires = timedelta(minutes=1440)
-        access_token = create_acces_token(
-            data={'sub': user.email, 'admin': False},
-            expires_delta=access_token_expires
-        )
-
+    new_user = {
+        "username": user.username,
+        "email": user.email,
+        "password_hash": get_password_hash(user.password),
+        "created_at": dt.now(timezone.utc),
+        "role": "user"
+    }
 
     user_id = users_collection.insert_one(new_user).inserted_id
+
+    
+    access_token_expires = timedelta(minutes=1440)
+    access_token = create_acces_token(
+        data={'sub': user.email, 'admin': False, 'uid': str(user_id)},
+        expires_delta=access_token_expires
+    )
+
+
     return {"user-id": str(user_id), "token": access_token}
 
 
@@ -67,6 +57,8 @@ def get_user(
     request: Request,
     _: Annotated[str, Depends(swagger_bearer_scheme)]
 ):
+    check_owner_or_admin(request, user_id)
+
     try:
         user_id = ObjectId(user_id)
         user = users_collection.find_one({ "_id": user_id })
@@ -90,6 +82,8 @@ def get_user_statistics(
     request: Request,
     _: Annotated[str, Depends(swagger_bearer_scheme)]
 ):
+    check_owner_or_admin(request, user_id)
+
     try:
         user_id = ObjectId(user_id)
 
@@ -161,6 +155,8 @@ def get_user_history(
     request: Request,
     _: Annotated[str, Depends(swagger_bearer_scheme)]
 ):
+    check_owner_or_admin(request, user_id)
+
     try:
         user_id = ObjectId(user_id)
 
@@ -245,6 +241,8 @@ def get_user_recent_attempts(
     request: Request,
     _: Annotated[str, Depends(swagger_bearer_scheme)]
 ):
+    check_owner_or_admin(request, user_id)
+
     try:
         user_id = ObjectId(user_id)
 
@@ -344,6 +342,8 @@ def get_user_attempts(
     request: Request,
     _: Annotated[str, Depends(swagger_bearer_scheme)]
 ):
+    check_owner_or_admin(request, user_id)
+
     try:
         user_id = ObjectId(user_id)
     except bson.errors.InvalidId:
@@ -455,6 +455,8 @@ def get_user_performance_over_time(
     request: Request,
     _: Annotated[str, Depends(swagger_bearer_scheme)]
 ):
+    check_owner_or_admin(request, user_id)
+
     try:
         user_id = ObjectId(user_id)
     except bson.errors.InvalidId:

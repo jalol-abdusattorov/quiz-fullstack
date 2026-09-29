@@ -1,6 +1,7 @@
 <template>
     <div class="dashboard-layout">
         <admin-app-header />
+
         <main class="container">
             <div class="search-quiz">
                 <input class="search-bar" type="text" @input="onTyping" v-model="searching" placeholder="Search quizzes...">

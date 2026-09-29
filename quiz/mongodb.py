@@ -1,7 +1,13 @@
+import os
+from dotenv import find_dotenv, load_dotenv
 from pymongo import MongoClient
 
-connection_string = "mongodb://localhost:27017/"
-client = MongoClient(connection_string)
+dotenv_path = find_dotenv()
+load_dotenv(dotenv_path)
+
+MONGO_URI = os.getenv('MONGO_URI')
+
+client = MongoClient(MONGO_URI)
 db = client.quiz_backend
 
 # importing from here, dont want to make a new collection in every files

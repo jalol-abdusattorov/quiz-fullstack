@@ -60,7 +60,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
         try:
             token = auth_header.split(" ")[1]
             payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-            
+
             # Inject user, token payload and admin status into state for auth 
             request.state.user = payload
             request.state.token_string = token
@@ -69,6 +69,8 @@ class AuthMiddleware(BaseHTTPMiddleware):
         except jwt.ExpiredSignatureError:
             return JSONResponse(status_code=403, content={"detail": "Token has expired"})
         except jwt.PyJWTError:
+            return JSONResponse(status_code=401, content={"detail": "Invalid token"})
+        except KeyError:
             return JSONResponse(status_code=401, content={"detail": "Invalid token"})
 
         return await call_next(request)

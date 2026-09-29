@@ -35,23 +35,19 @@ def create_question(
     return {"question_id": str(question_id)}
 
 
-# AUTHORIZED NOT ADMIN
+# AUTHORIZED AND ADMIN
 @router.get("/questions/{question_id}")
 def get_question(
     question_id: str,
     request: Request,
     _: Annotated[str, Depends(swagger_bearer_scheme)]
 ):
-    # if not request.state.admin:
-    #     raise permission_denied_exception
+    if not request.state.admin:
+        raise permission_denied_exception
 
     try:
         question_id = ObjectId(question_id)
-        question = questions_collection.find_one(
-            {
-                "_id": question_id
-            }
-        )
+        question = questions_collection.find_one({ "_id": question_id })
 
         if not question:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="question not found")
@@ -139,13 +135,16 @@ def get_question_statistics(
         raise invalid_id_exception
 
 
-# AUTHORIZED
+# AUTHORIZED AND ADMIN
 @router.get("/question/is-valid/{question_id}")
 def is_valid_question(
     question_id: str,
     request: Request,
     _: Annotated[str, Depends(swagger_bearer_scheme)]
 ):
+    if not request.state.admin:
+        raise permission_denied_exception
+
     if not question_id.strip():
         return {'message': "question does not exist"}
 

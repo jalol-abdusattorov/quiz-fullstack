@@ -9,11 +9,20 @@
                 <div class="pagination-controls">
                     <p class="page-indicatior" v-if="isPopularQuizzes">Popular Quizzes</p>
                     <p class="page-indicatior" v-if="!isPopularQuizzes">All Quizzes</p>
+
                     <button class="page-btn all-quizzes" @click="allQuizzes">All Quizzes</button>
                     <button class="page-btn popular-quizzes" @click="popularQuizzes">Popular Quizzes</button>
+
                     <span class="page-indicator">Page {{ currentPage }}</span>
+
                     <button class="page-btn" :disabled="currentPage <= 1" @click="prevPage">Previous</button>
-                    <button class="page-btn" @click="nextPage">Next</button>
+                    <button
+                      class="page-btn"
+                      @click="nextPage"
+                      :disabled="!quizzesStore.quizzes || quizzesStore.quizzes == null || quizzesStore.quizzes?.length == 0"
+                    >
+                      Next
+                    </button>
                 </div>
             </div>
 
@@ -64,9 +73,9 @@ import QuizDetails from './QuizDetails.vue';
         name: "Quizzes",
         components: { QuizzesComponent, QuizDetails },
         setup() {
+            const quizzesStore = useQuizzesStore()
             const category = ref()
             const isPopularQuizzes = ref(false)
-            const quizzesStore = useQuizzesStore()
             const currentPage = ref(1)
 
             onMounted(() => {
@@ -109,7 +118,17 @@ import QuizDetails from './QuizDetails.vue';
               await quizzesStore.getQuizzesByCategory(category.value, currentPage.value)
             }
 
-            return { currentPage, nextPage, prevPage, quizzesStore, isPopularQuizzes, category, popularQuizzes, allQuizzes, handleSelect }
+            return {
+              currentPage, 
+              nextPage,
+              prevPage,
+              quizzesStore,
+              isPopularQuizzes,
+              category,
+              popularQuizzes,
+              allQuizzes,
+              handleSelect
+            }
         }
     }
 </script>

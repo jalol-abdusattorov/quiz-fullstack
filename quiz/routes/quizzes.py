@@ -1,9 +1,8 @@
 import re
-
 import bson
 from bson import ObjectId
-from typing import Annotated, Optional
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from typing import Annotated
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from datetime import datetime as dt, timedelta, timezone
 
 from mongodb import *
@@ -37,7 +36,7 @@ def create_quiz(
         "difficulty": quiz.difficulty,
         "question_ids": quiz.question_ids,
         "time_limit": quiz.time_limit,
-        "created_at": dt.now()
+        "created_at": dt.now(timezone.utc)
     }
 
     quiz_id = quizzes_collection.insert_one(new_quiz).inserted_id
@@ -137,7 +136,7 @@ def start_quiz(
         raise quiz_not_found_exception
 
     attempt_id = random_id()
-    started_at = dt.now()
+    started_at = dt.now(timezone.utc)
 
     attempts_collection.insert_one({
         "attempt_id": attempt_id,
@@ -168,7 +167,7 @@ def submit_quiz(
 
     user_email = _request.state.user['sub']
 
-    quiz = quizzes_collection.find_one({ "_id": quiz_id }, { "question_ids": 1 })
+    quiz = quizzes_collection.find_one({ "_id": quiz_id }, { "question_ids": 1, "time_limit": 1 })
     if not quiz:
         raise quiz_not_found_exception
 
@@ -178,10 +177,15 @@ def submit_quiz(
 
     answers, score, started_at = validate_user_inputs_and_calculate_result(request, quiz, user_email)
 
-    completed_at = dt.now()
+    completed_at = dt.now(timezone.utc)
     
     time_taken = int((completed_at - started_at).total_seconds())
     total = len(quiz['question_ids'])
+
+    print(time_taken, quiz['time_limit'])
+
+    if (time_taken > quiz['time_limit']):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Time is already up")
 
     new_result = {
         "user_id": user['_id'],
@@ -837,7 +841,7 @@ def get_quiz_dashboard(
             return {'message': "this quiz haven't been tried yet"}
 
         final_result.insert(0, { "quiz": { "title": quiz["title"] } })
-        print(final_result[0])
+
         return {"results": final_result}
 
 
@@ -1009,7 +1013,7 @@ def get_quizzes_by_category(
     _: Annotated[str, Depends(swagger_bearer_scheme)]
 ):
     if page < 1:
-        return page_exception
+        raise page_exception
 
     skipping_value = (page - 1) * 10
     limit = 12
@@ -1196,7 +1200,7 @@ def get_quiz_questions(
 
         return final_result
     except:
-        return invalid_id_exception
+        raise invalid_id_exception
 
 
 # AUTHORIZED AND ADMIN

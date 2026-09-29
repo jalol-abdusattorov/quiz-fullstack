@@ -140,6 +140,13 @@ const router = createRouter({
       props: true
     },
     {
+      path: "/quizzes/create-quiz",
+      name: "CreateQuiz",
+      component: () => import('@/views/CreateQuiz.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true, showGlobalComponent: false },
+      props: true
+    },
+    {
       path: '/:pathMatch(.*)*',
       name: 'NotFound',
       component: () => import('@/views/NotFound.vue'),

@@ -1,9 +1,10 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+
 
 class UserRequest(BaseModel):
     username: str
     email: str = "user@example.com"
-    password: str
+    password: str = Field(..., min_length=5, max_length=72)
 
 class Quiz(BaseModel):
     title: str

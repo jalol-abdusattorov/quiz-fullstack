@@ -1,9 +1,9 @@
-import json
 import bson
 from bson import ObjectId
 from fastapi import HTTPException, status
 from fastapi.security import HTTPBearer
 from datetime import datetime as dt
+from zxcvbn import zxcvbn
 
 from mongodb import questions_collection, attempts_collection
 from models import QuestionRequest, Quiz, UserRequest
@@ -14,7 +14,7 @@ swagger_bearer_scheme = HTTPBearer(auto_error=False)
 def check_valid_question(question: QuestionRequest):
     if not question.question.strip():
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="question must not be empty")
-    
+
     if len(question.options) != 4:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="only 4 options")
     
@@ -141,3 +141,25 @@ def validate_user_inputs_and_calculate_result(request, quiz, user_email) -> tupl
     started_at = consume_attempt(request.attempt_id, quiz["_id"], user_email)
  
     return answers, score, started_at
+
+
+def check_owner_or_admin(request, target_user_id: str):
+    if request.state.admin:
+        return
+
+    if request.state.user.get('uid') != target_user_id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="permission denied")
+
+
+def check_password(password): 
+    # Get the password strength
+    result = zxcvbn(password)
+    score = result.get('score', 0)
+
+    if score < 3:
+        suggestions = result.get('feedback', {}).get('suggestions', [])
+        error_msg = suggestions[0] if suggestions else "Password is too easy"
+
+        raise HTTPException(status_code=403, detail=f"Weak password, {error_msg}")
+
+    return password

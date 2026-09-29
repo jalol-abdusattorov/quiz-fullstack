@@ -48,7 +48,7 @@ quiz-fullstack/
 
 ```bash
 cd quiz
-pip install PyJWT fastapi python-dotenv starlette pymongo bcrypt
+pip install PyJWT fastapi python-dotenv starlette pymongo bcrypt zxcvbn
 ```
 
 Create a `.env` file inside `quiz/` with your configuration, for example:

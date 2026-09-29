@@ -26,7 +26,10 @@ def get_result(
     final_result = results_collection.find_one({ "_id": result_id })
 
     if not final_result:
-        return
+        raise HTTPException(status_code=404, detail="result not found")
+
+    if not request.state.admin and str(final_result['user_id']) != request.state.user.get('uid'):
+        raise HTTPException(status_code=403, detail="permission denied")
 
     final_result['_id'] = str(final_result['_id'])
     final_result['user_id'] = str(final_result['user_id'])

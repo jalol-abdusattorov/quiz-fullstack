@@ -27,13 +27,14 @@ async def login_for_access_token(
     if user['role'] == "admin":
         access_token_expires = timedelta(minutes=1440)
         access_token = create_acces_token(
-            data={'sub': user['email'], 'admin': True},
+            data={'sub': user['email'], 'admin': True, 'uid': str(user['_id'])},
             expires_delta=access_token_expires
         )
+
     elif user['role'] == "user":
         access_token_expires = timedelta(minutes=1440)
         access_token = create_acces_token(
-            data={'sub': user['email'], 'admin': False},
+            data={'sub': user['email'], 'admin': False, 'uid': str(user['_id'])},
             expires_delta=access_token_expires
         )
     else:

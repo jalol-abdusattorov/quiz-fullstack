@@ -329,7 +329,26 @@ export const useQuizzesStore = defineStore('quizzesStore', () => {
         }
     }
 
+    async function createQuiz(quizDetails) {
+        loading.value = true
+        error.value = null
+
+        try {
+            const response = await this.$api.post(`/quizzes`, quizDetails)
+            const data = response.data
+            // console.log(data)
+
+            return data
+        } catch (exception) {
+            error.value = exception.message || exception
+            console.error(exception);
+        } finally {
+            loading.value = false
+        }
+    }
+
     return {
+        createQuiz,
         deleteQuiz,
         getQuizDashboard,
         getUserLeaderboardRank,

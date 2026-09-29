@@ -49,8 +49,15 @@
 
             <div class="pagination-controls">
                 <span class="page-indicator">Page {{ currentPage }}</span>
+
                 <button class="page-btn" :disabled="currentPage <= 1" @click="prevPage">Previous</button>
-                <button class="page-btn" @click="nextPage">Next</button>
+                <button
+                    class="page-btn"
+                    :disabled="!quizzesStore.quizzes || quizzesStore.quizzes == null || quizzesStore.quizzes?.length == 0"
+                    @click="nextPage"
+                >
+                Next
+                </button>
             </div>
 
             <div v-if="quizzesStore.quizzes.length">

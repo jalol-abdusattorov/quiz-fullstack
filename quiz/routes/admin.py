@@ -19,9 +19,9 @@ def get_result(
     if not request.state.admin:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="permission denied")
 
-    total_users = len(list(users_collection.find({})))
-    total_quizzes = len(list(quizzes_collection.find({})))
-    total_questions = len(list(questions_collection.find({})))
-    total_attempts = len(list(results_collection.find({})))
+    total_users = users_collection.count_documents({})
+    total_quizzes = quizzes_collection.count_documents({})
+    total_questions = questions_collection.count_documents({})
+    total_attempts = results_collection.count_documents({})
 
     return { "total_users": total_users, "total_quizzes": total_quizzes, "total_questions": total_questions, "total_attempts": total_attempts }
