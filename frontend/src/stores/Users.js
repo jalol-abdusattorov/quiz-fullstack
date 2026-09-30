@@ -12,7 +12,6 @@ export const useUsersStore = defineStore('UsersStore', () => {
         try {
             const response = await this.$api.get(`/users/${userId}`);
             const data = response.data;
-            // console.log(data);
 
             return data
         } catch (exception) {
@@ -41,7 +40,6 @@ export const useUsersStore = defineStore('UsersStore', () => {
 
             const response = await this.$api.get(`/users/${userId}/attempts`, params);
             const data = response.data;
-            // console.log(data);
 
             return data
         } catch (exception) {
@@ -59,7 +57,6 @@ export const useUsersStore = defineStore('UsersStore', () => {
         try {
             const response = await this.$api.get(`/users/${userId}/performance-over-time`);
             const data = response.data;
-            // console.log(data);
 
             return data
         } catch (exception) {

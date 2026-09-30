@@ -308,6 +308,9 @@ def get_user_recent_attempts(
                 '$unwind': {
                     'path': '$quiz_details'
                 }
+            },
+            {
+                '$limit': 10
             }
         ])
 

@@ -1,8 +1,9 @@
 <template>
     <div>
         <!-- ADMIN -->
-        <header class="navbar" v-if="isAdmin">
+        <header class="navbar">
             <router-link :to="{ name: 'AdminDashboard' }" class="brand">Quiz</router-link>
+
             <nav class="router-links">
                 <router-link class="nav-btn" :to="{ name: 'CreateQuiz' }">Create Quiz</router-link>
                 <router-link class="nav-btn" :to="{ name: 'QuizManagement' }">Quiz Management</router-link>

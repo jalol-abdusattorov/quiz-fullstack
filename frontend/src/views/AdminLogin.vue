@@ -22,7 +22,7 @@
 
                 <button
                     type="button"
-                    class="toggle-password"
+                    class="password-toggle"
                     @click="showPassword = !showPassword"
                 >
                     {{ showPassword ? 'Hide' : 'Show' }}
@@ -114,15 +114,46 @@ import { useRouter } from 'vue-router';
     padding-right: 60px;
 }
 
-.toggle-password {
+.password-toggle {
     position: absolute;
-    right: 10px;
     top: 8px;
+    right: 8px;
 
-    border: none;
-    background: none;
-    color: #2563eb;
+    /* Remove top/transform positioning entirely to avoid layout shifts */
+    bottom: auto;
+    transform: none;
+
+    margin: 0;
+    padding: 4px 10px;
+
+    /* Primary theme colors */
+    background: #e0e7ff;
+    color: #4f46e5;
+
+    border: 1px solid #c7d2fe;
+    border-radius: 6px;
+
+    font-size: 11px;
+    font-weight: 600;
+
     cursor: pointer;
+
+    /* Fix dimensions so size changes never trigger mouse leave/enter loops */
+    box-sizing: border-box;
+
+    transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.password-toggle:hover {
+    color: #ffffff;
+    background: #4f46e5;
+    border-color: #4f46e5;
+    box-shadow: 0 2px 8px rgba(79, 70, 229, 0.25);
+}
+
+.password-toggle:active {
+    background: #4338ca;
+    box-shadow: none;
 }
 
 .login-form > button {

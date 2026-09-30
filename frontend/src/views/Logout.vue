@@ -1,31 +1,33 @@
 <template>
-  <div class="logout-page">
-    <div class="logout-card">
-      <!-- Warning / Exit Icon -->
-      <div class="icon-wrapper">
-        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-          <polyline points="16 17 21 12 16 7" />
-          <line x1="21" y1="12" x2="9" y2="12" />
-        </svg>
-      </div>
-
-      <h2 class="logout-title">Log out of your account?</h2>
-      <p class="logout-subtitle">
-        You will need to enter your credentials again to log back into your dashboard.
-      </p>
-
-      <div class="logout-actions">
-        <button class="btn btn-confirm" @click="handleLogout">
-          Yes, Log me out
-        </button>
-        <button class="btn btn-cancel" @click="handleCancel">
-          Stay logged in
-        </button>
+  <main>
+    <div class="logout-page">
+      <div class="logout-card">
+        <!-- Warning / Exit Icon -->
+        <div class="icon-wrapper">
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            <polyline points="16 17 21 12 16 7" />
+            <line x1="21" y1="12" x2="9" y2="12" />
+          </svg>
+        </div>
+  
+        <h2 class="logout-title">Log out of your account?</h2>
+        <p class="logout-subtitle">
+          You will need to enter your credentials again to log back into your dashboard.
+        </p>
+  
+        <div class="logout-actions">
+          <button class="btn btn-confirm" @click="handleLogout">
+            Yes, Log me out
+          </button>
+          <button class="btn btn-cancel" @click="handleCancel">
+            Stay logged in
+          </button>
+        </div>
       </div>
     </div>
-  </div>
+  </main>
 </template>
 
 <script setup>
@@ -46,6 +48,10 @@ const handleCancel = () => {
 </script>
 
 <style scoped>
+main {
+  background: #f8fafc;
+}
+
 /* Page container - positions card slightly higher than vertical center */
 .logout-page {
   display: flex;

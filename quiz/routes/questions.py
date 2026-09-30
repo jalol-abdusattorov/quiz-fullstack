@@ -35,16 +35,13 @@ def create_question(
     return {"question_id": str(question_id)}
 
 
-# AUTHORIZED AND ADMIN
+# AUTHORIZED
 @router.get("/questions/{question_id}")
 def get_question(
     question_id: str,
     request: Request,
     _: Annotated[str, Depends(swagger_bearer_scheme)]
 ):
-    if not request.state.admin:
-        raise permission_denied_exception
-
     try:
         question_id = ObjectId(question_id)
         question = questions_collection.find_one({ "_id": question_id })

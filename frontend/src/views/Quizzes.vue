@@ -19,7 +19,7 @@
                     <button
                       class="page-btn"
                       @click="nextPage"
-                      :disabled="!quizzesStore.quizzes || quizzesStore.quizzes == null || quizzesStore.quizzes?.length == 0"
+                      :disabled="quizzesStore.quizzes?.length == 0 || quizzesStore?.quizzes.length < 12"
                     >
                       Next
                     </button>

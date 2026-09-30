@@ -12,7 +12,6 @@ export const useAdminStore = defineStore('AdminStore', () => {
         try {
             const response = await this.$api.get("/admin/get-dashboard");
             const data = response.data;
-            // console.log(data);
 
             return data
         } catch (exception) {

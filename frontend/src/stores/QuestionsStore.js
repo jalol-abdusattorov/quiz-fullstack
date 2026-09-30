@@ -12,8 +12,7 @@ export const useQuestionsStore = defineStore('questionsStore', () => {
         try {
             const response = await this.$api.get(`/questions/${questionId}`);
             const data = response.data;
-            // console.log(data);
-            
+
             return data
         } catch (exception) {
             error.value = exception.message || exception
@@ -22,6 +21,7 @@ export const useQuestionsStore = defineStore('questionsStore', () => {
             loading.value = false
         }
     }
+
     async function validQuestionId(questionId) {
         loading.value = true
         error.value = null
@@ -29,7 +29,6 @@ export const useQuestionsStore = defineStore('questionsStore', () => {
         try {
             const response = await this.$api.get(`/question/is-valid/${questionId}`)
             const data = response.data
-            // console.log(data);
 
             return data
         } catch (exception) {
@@ -46,7 +45,6 @@ export const useQuestionsStore = defineStore('questionsStore', () => {
         try {
             const response = await this.$api.post('/questions', questionDetails)
             const data = response.data
-            console.log(data);
 
             return data
         } catch (exception) {

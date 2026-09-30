@@ -3,31 +3,25 @@
         <header class="navbar">
             <router-link :to="{ name: 'Home' }" class="brand">Quiz</router-link>
             <nav class="router-links">
-                <!-- ADMIN -->
-                <template v-if="isAdmin">
-                    <router-link class="nav-btn" :to="{ name: 'Home' }">Home</router-link>
-                    <router-link class="nav-btn" :to="{ name: 'Quizzes' }">Quizzes</router-link>
-                    <router-link class="nav-btn" :to="{ name: 'QuizBrowser' }">Browse Quizzes</router-link>
-                    <router-link class="nav-btn" :to="{ name: 'UserAttempts' }">Attempts History</router-link>
-                    <router-link class="nav-btn" :to="{ name: 'Logout' }">Logout</router-link>
-                    <img src="../assets/images/userProfile.jpg" class="profile-icon" alt="User Profile" @click="ToProfilePage">
-                </template>
+              <!-- ADMIN -->
+              <template v-if="isAdmin">
+                <router-link class="nav-btn" :to="{ name: 'AdminDashboard' }">Admin Dashboard</router-link>
+              </template>
 
-                <!-- LOGGED IN -->
-                <template v-else-if="isAuthenticated">
-                    <router-link class="nav-btn" :to="{ name: 'Home' }">Home</router-link>
-                    <router-link class="nav-btn" :to="{ name: 'Quizzes' }">Quizzes</router-link>
-                    <router-link class="nav-btn" :to="{ name: 'QuizBrowser' }">Browse Quizzes</router-link>
-                    <router-link class="nav-btn" :to="{ name: 'UserAttempts' }">Attempts History</router-link>
-                    <router-link class="nav-btn" :to="{ name: 'Logout' }">Logout</router-link>
-                    <img src="../assets/images/userProfile.jpg" class="profile-icon" alt="User Profile" @click="ToProfilePage">
-                </template>
+              <template v-if="isAuthenticated">
+                <router-link class="nav-btn" :to="{ name: 'Home' }">Home</router-link>
+                <router-link class="nav-btn" :to="{ name: 'Quizzes' }">Quizzes</router-link>
+                <router-link class="nav-btn" :to="{ name: 'QuizBrowser' }">Browse Quizzes</router-link>
+                <router-link class="nav-btn" :to="{ name: 'UserAttempts' }">Attempts History</router-link>
+                <router-link class="nav-btn" :to="{ name: 'Logout' }">Logout</router-link>
+                <img src="../assets/images/userProfile.jpg" class="profile-icon" alt="User Profile" @click="ToProfilePage">
+              </template>
 
-                <!-- LOGGED OUT -->
-                <template v-else>
-                    <router-link class="nav-btn" :to="{ name: 'Login' }">Login</router-link>
-                    <router-link class="nav-btn" :to="{ name: 'Register' }">Register</router-link>
-                </template>
+              <!-- LOGGED OUT -->
+              <template v-if="!isAuthenticated">
+                  <router-link class="nav-btn" :to="{ name: 'Login' }">Login</router-link>
+                  <router-link class="nav-btn" :to="{ name: 'Register' }">Register</router-link>
+              </template>
             </nav>
         </header>
     </div>

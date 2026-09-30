@@ -1,6 +1,10 @@
 <template>
-    <main class="container" >
+    <div class="container">
+        <EmptyStats v-if="!userAttempts && currentPage == 1" />
+        <p v-else>This page is empty</p>
+
         <template v-if="userAttempts">
+
             <div class="page-header">
                 <div>
                     <h1>My Attempts</h1>
@@ -40,23 +44,22 @@
                             <span :class="level(attempt.percentage)" :style="{ width: attempt.percentage + '%' }"></span>
                         </div>
                     </div>
-                    <div data-label="Time taken">{{ formatTime(attempt.time_taken) }}</div>
-                    <!-- Fix: router-link -->
-                    <button class="btn" @click="ViewQuizResult(attempt._id)">View result</button>
-                    <!-- <p>{{ attempt }}</p> -->
-                </div>
-            </section>
 
+                    <div data-label="Time taken">{{ formatTime(attempt.time_taken) }}</div>
+                    <button class="btn" @click="ViewQuizResult(attempt._id)">View result</button>
+                </div>
+            </section>    
         </template>
+
         <div class="pagination">
             <span class="count">Showing {{ userAttempts?.length || 0 }} of {{ totalAttempts }}</span>
             <div class="pager">
-                <span class="page">Page 1</span>
+                <span class="page">Page {{ currentPage }}</span>
                 <button @click="prevPage" :disabled="currentPage <= 1">Previous</button>
                 <button @click="nextPage" :disabled="currentPage > totalAttempts / 10">Next</button>
             </div>
         </div>
-    </main>
+    </div>
 </template>
 
 <script>
@@ -78,8 +81,9 @@ import { useRouter } from 'vue-router';
             const userAttempts = ref(null)
             const totalAttempts = ref(0)
             const currentPage = ref(1)
-            const router = useRouter()
             const sortingBy = ref("newestFirst")
+            
+            const router = useRouter()
             const userId = computed(() => {
                 return authStore.user.id || null
             })
@@ -197,6 +201,7 @@ import { useRouter } from 'vue-router';
 .container * {
     box-sizing: border-box;
 }
+
 
 /* Page */
 .container {

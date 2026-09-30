@@ -1,7 +1,7 @@
 import bson
 from bson import ObjectId
 from typing import Annotated
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Request
 
 from mongodb import *
 from routes.route_utils import swagger_bearer_scheme
@@ -28,7 +28,7 @@ def get_result(
     if not final_result:
         raise HTTPException(status_code=404, detail="result not found")
 
-    if not request.state.admin and str(final_result['user_id']) != request.state.user.get('uid'):
+    if not request.state.admin and str(final_result['user_id']) != str(request.state.user.get('uid')):
         raise HTTPException(status_code=403, detail="permission denied")
 
     final_result['_id'] = str(final_result['_id'])

@@ -12,8 +12,7 @@ export const useResultsStore = defineStore('ResultsStore', () => {
         try {
             const response = await this.$api.get(`/results/${resultId}`);
             const data = response.data;
-            // console.log(data);
-            
+
             return data
         } catch (exception) {
             error.value = exception.message || exception

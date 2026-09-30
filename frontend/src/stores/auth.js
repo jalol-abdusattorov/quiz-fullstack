@@ -121,7 +121,6 @@ export const useAuthStore = defineStore('auth', () => {
                 err.response?.data?.message ||
                 'Invalid email or password'
             console.error(err);
-            throw err
         } finally {
             loading.value = false
         }

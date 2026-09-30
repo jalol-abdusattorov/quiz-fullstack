@@ -52,7 +52,7 @@ def get_quizzes(
 ):
     if page <= 0: raise page_exception
 
-    skipping_pages = (page - 1) * 10
+    skipping_pages = (page - 1) * 12
     limit = 12
 
     page_quizzes = quizzes_collection.find({}).skip(skipping_pages).limit(limit)
@@ -177,12 +177,13 @@ def submit_quiz(
 
     answers, score, started_at = validate_user_inputs_and_calculate_result(request, quiz, user_email)
 
+    if started_at.tzinfo is None:
+        started_at = started_at.replace(tzinfo=timezone.utc)
+
     completed_at = dt.now(timezone.utc)
     
     time_taken = int((completed_at - started_at).total_seconds())
     total = len(quiz['question_ids'])
-
-    print(time_taken, quiz['time_limit'])
 
     if (time_taken > quiz['time_limit']):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Time is already up")
@@ -199,11 +200,12 @@ def submit_quiz(
         "time_taken": time_taken
     }
 
-    res = results_collection.insert_one(new_result)
+    results_collection.insert_one(new_result)
 
     new_result['_id'] = str(new_result['_id'])
-    new_result["user_id"] = str(new_result["user_id"]) 
+    new_result["user_id"] = str(new_result["user_id"])
     new_result['quiz_id'] = str(new_result['quiz_id'])
+
     for i in range(len(new_result["answers"])):
         new_result["answers"][i]['question_id'] = str(new_result["answers"][i]['question_id'])
 
@@ -227,7 +229,7 @@ def get_quiz_leaderboard(
         if page <= 0:
             raise page_exception
 
-        skipping_value = (page - 1) * 10
+        skipping_value = (page - 1) * 12
         limit = 12
 
         result = results_collection.aggregate([
@@ -417,7 +419,7 @@ def get_quiz_leaderboard_rankings(
         if page <= 0:
             raise page_exception
 
-        skipping_value = (page - 1) * 10
+        skipping_value = (page - 1) * 12
         limit = 12
 
         result = results_collection.aggregate([
@@ -476,7 +478,8 @@ def get_quiz_leaderboard_rankings(
             },
             {
                 "$sort": {
-                    "leaderboard_rank": 1
+                    "leaderboard_rank": 1,
+                    "time_taken": 1
                 }
             },
             {
@@ -866,7 +869,7 @@ def get_quiz_hardest_questions(
         if page <= 0:
             raise page_exception
 
-        skipping_value = (page - 1) * 10
+        skipping_value = (page - 1) * 12
         limit = 12
 
         result = results_collection.aggregate([
@@ -950,7 +953,7 @@ def get_popular_quizzes(
     if page <= 0:
         raise page_exception
 
-    skipping_value = (page - 1) * 10
+    skipping_value = (page - 1) * 12
     limit = 12
 
     time_threshold = dt.now(timezone.utc) - timedelta(days=7)
@@ -1015,7 +1018,7 @@ def get_quizzes_by_category(
     if page < 1:
         raise page_exception
 
-    skipping_value = (page - 1) * 10
+    skipping_value = (page - 1) * 12
     limit = 12
 
     cursor = quizzes_collection.aggregate([
@@ -1065,7 +1068,7 @@ def get_quizzes(
     difficultyFilter = {} if difficulty == "all" else { "difficulty": difficulty }
     sort = { sorting_by: sorting_order }
 
-    skipping_val = (page - 1) * 10
+    skipping_val = (page - 1) * 12
     limit = 12
 
     cursor = quizzes_collection.aggregate([
@@ -1111,7 +1114,7 @@ def search_quizzes_by(
 
     safe_target = re.escape(search)
 
-    skipping_val = (page - 1) * 10
+    skipping_val = (page - 1) * 12
     limit = 12
 
     search = search.strip()

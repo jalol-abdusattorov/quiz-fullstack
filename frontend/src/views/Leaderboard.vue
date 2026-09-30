@@ -60,7 +60,7 @@
           Previous
         </button>
         <span class="page-label">Page {{ currentPage }}</span>
-        <button class="btn ghost" @click="nextPage" :disabled="atEnd">
+        <button class="btn ghost" @click="nextPage" :disabled="atEnd || leaderboard.length < 12">
           Next
         </button>
       </div>
@@ -83,6 +83,7 @@ import { computed, onMounted, ref } from 'vue';
             const authStore = useAuthStore()
             const quizzesStore = useQuizzesStore()
             const usersStore = useUsersStore()
+
             const leaderboard = ref([])
             const currentPage = ref(1)
             const userId = authStore.user?.id

@@ -1,4 +1,5 @@
 <template>
+  <main>
     <div class="container">
 
       <div class="statistics">
@@ -72,6 +73,7 @@
         </div>
       </div>
     </div>
+  </main>
 </template>
 
 <script>
@@ -132,11 +134,14 @@ import EmptyStats from '@/components/EmptyStats.vue';
 </script>
 
 <style scoped>
+main {
+  background: #f8fafc;
+}
+
 .container {
   max-width: 1400px;
   margin: 0 auto;
 }
-
 
 hr {
   color: #e7e4e4;

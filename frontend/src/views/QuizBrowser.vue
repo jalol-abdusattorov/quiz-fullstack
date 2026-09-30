@@ -53,7 +53,7 @@
                 <button class="page-btn" :disabled="currentPage <= 1" @click="prevPage">Previous</button>
                 <button
                     class="page-btn"
-                    :disabled="!quizzesStore.quizzes || quizzesStore.quizzes == null || quizzesStore.quizzes?.length == 0"
+                    :disabled="quizzesStore.quizzes?.length == 0 || quizzesStore?.quizzes.length < 12"
                     @click="nextPage"
                 >
                 Next

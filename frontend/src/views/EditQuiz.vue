@@ -252,7 +252,7 @@ import { useQuestionsStore } from '@/stores/QuestionsStore.js';
                 questionIdInput.value = questionIdInput.value.trim()
 
                 const response = await questionsStore.validQuestionId(questionIdInput.value)
-                console.log(response);
+
                 if (response?.message == 'question does not exist') {
                     validQuestionId.value = false
                     return

@@ -12,7 +12,6 @@ export const useQuizzesStore = defineStore('quizzesStore', () => {
         error.value = null
 
         try {
-            // http://localhost:8000
             const response = await this.$api.get(`/quizzes/get-all-quizzes/${page}`)
             const data = response.data
             quizzes.value = data.quizzes
@@ -32,7 +31,6 @@ export const useQuizzesStore = defineStore('quizzesStore', () => {
         try {
             const response = await this.$api.get(`/quizzes/${quizId}`)
             const data = response.data
-            // console.log(data);
 
             return data
         } catch (exception) {
@@ -50,6 +48,7 @@ export const useQuizzesStore = defineStore('quizzesStore', () => {
         try {
             const response = await this.$api.get(`/quizzes/popular/${page}`)
             const data = response.data
+
             quizzes.value = data
 
             return data
@@ -68,7 +67,7 @@ export const useQuizzesStore = defineStore('quizzesStore', () => {
         try {
             const response = await this.$api.get(`/quizzes/category/${category}/${page}`)
             const data = response.data
-            // console.log(data.result);
+
             quizzes.value = data.result
 
             return data
@@ -87,7 +86,6 @@ export const useQuizzesStore = defineStore('quizzesStore', () => {
         try {
             const response = await this.$api.get(`/users/${userId}/statistics`)
             const data = response.data
-            // console.log(data.result);
 
             return data
         } catch (exception) {
@@ -105,7 +103,6 @@ export const useQuizzesStore = defineStore('quizzesStore', () => {
         try {
             const response = await this.$api.get(`/users/${userId}/recent-attempts`)
             const data = response.data
-            // console.log(data.result);
 
             return data
         } catch (exception) {
@@ -133,7 +130,7 @@ export const useQuizzesStore = defineStore('quizzesStore', () => {
 
             const response = await this.$api.get(`/quizzes`, params)
             const data = response.data
-            // console.log(data);
+
             quizzes.value = data.result
 
             return data
@@ -178,7 +175,6 @@ export const useQuizzesStore = defineStore('quizzesStore', () => {
         try {
             const response = await this.$api.get(`/quizzes/${quizId}/questions`)
             const data = response.data
-            // console.log(data);
 
             return data
         } catch (exception) {
@@ -196,7 +192,6 @@ export const useQuizzesStore = defineStore('quizzesStore', () => {
         try {
             const response = await this.$api.post(`/quizzes/${quizId}/start`)
             const data = response.data
-            // console.log(data)
 
             return data
         } catch (exception) {
@@ -220,12 +215,12 @@ export const useQuizzesStore = defineStore('quizzesStore', () => {
             const response = await this.$api.post(`/quizzes/${quizId}/submit`, params)
             const data = response.data
             setResult(data)
-            // console.log(result.value);
 
             return data
         } catch (exception) {
             error.value = exception.message || exception
             console.error(exception);
+            return exception
         } finally {
             loading.value = false
         }
@@ -248,7 +243,6 @@ export const useQuizzesStore = defineStore('quizzesStore', () => {
         try {
             const response = await this.$api.get(`/quizzes/${quizId}/leaderboard-rankings/${page}`)
             const data = response.data
-            // console.log(data);
 
             return data
         } catch (exception) {
@@ -258,6 +252,7 @@ export const useQuizzesStore = defineStore('quizzesStore', () => {
             loading.value = false
         }
     }
+
     async function getUserLeaderboardRank(quizId, userId) {
         loading.value = true
         error.value = null
@@ -282,7 +277,6 @@ export const useQuizzesStore = defineStore('quizzesStore', () => {
         try {
             const response = await this.$api.get(`/quizzes/${quizId}/dashboard`)
             const data = response.data
-            // console.log(data);
 
             return data
         } catch (exception) {
@@ -300,7 +294,6 @@ export const useQuizzesStore = defineStore('quizzesStore', () => {
         try {
             const response = await this.$api.put(`/quizzes/edit-quiz/${quizId}`, editingValues)
             const data = response.data
-            // console.log(data);
 
             return data
         } catch (exception) {
@@ -318,7 +311,6 @@ export const useQuizzesStore = defineStore('quizzesStore', () => {
         try {
             const response = await this.$api.delete(`/quizzes/${quizId}`)
             const data = response.data
-            console.log(data);
 
             return data
         } catch (exception) {
@@ -336,7 +328,6 @@ export const useQuizzesStore = defineStore('quizzesStore', () => {
         try {
             const response = await this.$api.post(`/quizzes`, quizDetails)
             const data = response.data
-            // console.log(data)
 
             return data
         } catch (exception) {

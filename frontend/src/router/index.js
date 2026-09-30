@@ -52,7 +52,7 @@ const router = createRouter({
       path: "/quizzes/start-quiz/:id/:attemptId",
       name: "TakingQuiz",
       component: () => import('@/views/TakingQuiz.vue'),
-      meta: { requiresAuth: true },
+      meta: { requiresAuth: true, showGlobalComponent: false },
       props: true
     },
     {
