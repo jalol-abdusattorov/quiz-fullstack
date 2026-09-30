@@ -4,13 +4,6 @@ A fullstack quiz application built with **Vue 3** on the frontend and **FastAPI*
 
 > Register, browse quizzes, and take them — with a JWT-authenticated API behind the scenes.
 
-## Screenshots
-
-**Homepage**
-![Homepage](frontend/src/assets/images/Screenshot%202026-09-22%20233205.png)
-
-**Quiz Browsing**
-![Quiz Browsing](frontend/src/assets/images/Screenshot%202026-09-22%20233449.png)
 
 ## Tech Stack
 
